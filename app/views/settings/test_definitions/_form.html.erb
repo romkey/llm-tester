@@ -1,0 +1,56 @@
+<%= form_with model: [:settings, test_definition] do |form| %>
+  <% if test_definition.errors.any? %>
+    <div class="alert alert-danger">
+      <ul class="mb-0">
+        <% test_definition.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="mb-3">
+    <%= form.label :name, class: "form-label" %>
+    <%= form.text_field :name, class: "form-control", required: true %>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :llm_model_id, "Model", class: "form-label" %>
+    <%= form.collection_select :llm_model_id, LlmModel.includes(:server).order("servers.name", "llm_models.name"), :id, :label_with_server, { prompt: "Select a model" }, class: "form-select" %>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :prompt, class: "form-label" %>
+    <%= form.text_area :prompt, class: "form-control", rows: 4, required: true %>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :response_type, class: "form-label" %>
+    <%= form.select :response_type, TestDefinition::RESPONSE_TYPES, {}, class: "form-select" %>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :expected_response, "Expected Response (exact match)", class: "form-label" %>
+    <%= form.text_area :expected_response, class: "form-control", rows: 3 %>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :regex_pattern, "Regex Pattern (approximate match)", class: "form-label" %>
+    <%= form.text_field :regex_pattern, class: "form-control" %>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :frequency_minutes, "Run every (minutes)", class: "form-label" %>
+    <%= form.number_field :frequency_minutes, class: "form-control", min: 1, required: true %>
+  </div>
+
+  <div class="form-check mb-3">
+    <%= form.check_box :enabled, class: "form-check-input" %>
+    <%= form.label :enabled, class: "form-check-label" %>
+  </div>
+
+  <div class="d-flex gap-2">
+    <%= form.submit class: "btn btn-primary" %>
+    <%= link_to "Cancel", settings_test_definitions_path, class: "btn btn-outline-secondary" %>
+  </div>
+<% end %>

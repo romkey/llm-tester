@@ -1,0 +1,26 @@
+<%= form_with model: [:settings, llm_model] do |form| %>
+  <% if llm_model.errors.any? %>
+    <div class="alert alert-danger">
+      <ul class="mb-0">
+        <% llm_model.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="mb-3">
+    <%= form.label :name, class: "form-label" %>
+    <%= form.text_field :name, class: "form-control", required: true %>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :server_id, "Server", class: "form-label" %>
+    <%= form.collection_select :server_id, Server.order(:name), :id, :name, { prompt: "Select a server" }, class: "form-select" %>
+  </div>
+
+  <div class="d-flex gap-2">
+    <%= form.submit class: "btn btn-primary" %>
+    <%= link_to "Cancel", settings_llm_models_path, class: "btn btn-outline-secondary" %>
+  </div>
+<% end %>

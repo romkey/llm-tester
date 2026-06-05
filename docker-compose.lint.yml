@@ -1,0 +1,22 @@
+name: llm-tester-lint
+
+services:
+  llm-tester-lint:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dev
+    container_name: llm-tester-lint
+    volumes:
+      - .:/rails
+      - llm-tester-lint-bundle:/usr/local/bundle
+    environment:
+      RAILS_ENV: test
+      RUBOCOP_CACHE_ROOT: /rails/tmp/rubocop
+    command: >
+      bash -lc "
+        bundle check || bundle install &&
+        bin/rubocop
+      "
+
+volumes:
+  llm-tester-lint-bundle:

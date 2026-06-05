@@ -1,0 +1,7 @@
+llama:
+  name: llama3
+  server: ollama
+
+gpt:
+  name: gpt-4o-mini
+  server: openai

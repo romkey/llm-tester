@@ -1,0 +1,39 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="mb-0">Test Definitions</h1>
+  <%= link_to "Add Test", new_settings_test_definition_path, class: "btn btn-primary" %>
+</div>
+
+<% if @test_definitions.any? %>
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Model</th>
+          <th>Response Type</th>
+          <th>Frequency</th>
+          <th>Enabled</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @test_definitions.each do |test| %>
+          <tr>
+            <td><%= test.name %></td>
+            <td><%= test.llm_model.name %> (<%= test.server.name %>)</td>
+            <td><%= test.response_type %></td>
+            <td><%= test.frequency_minutes %> min</td>
+            <td><%= test.enabled? ? "Yes" : "No" %></td>
+            <td class="text-end">
+              <%= button_to "Run Now", run_now_settings_test_definition_path(test), method: :post, class: "btn btn-sm btn-outline-primary" %>
+              <%= link_to "Edit", edit_settings_test_definition_path(test), class: "btn btn-sm btn-outline-secondary" %>
+              <%= button_to "Delete", settings_test_definition_path(test), method: :delete, class: "btn btn-sm btn-outline-danger", form: { data: { turbo_confirm: "Delete this test?" } } %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <p class="text-muted">No tests configured.</p>
+<% end %>

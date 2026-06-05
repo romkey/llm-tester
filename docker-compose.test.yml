@@ -1,0 +1,43 @@
+name: llm-tester-test
+
+x-test: &test
+  build:
+    context: .
+    dockerfile: docker/Dockerfile.dev
+  volumes:
+    - .:/rails
+    - llm-tester-test-bundle:/usr/local/bundle
+    - llm-tester-test-node-modules:/rails/node_modules
+  environment:
+    RAILS_ENV: test
+    REDIS_URL: redis://llm-tester-test-redis:6379/0
+    CI: "true"
+  depends_on:
+    llm-tester-test-redis:
+      condition: service_healthy
+
+services:
+  llm-tester-test-redis:
+    image: redis:7-alpine
+    container_name: llm-tester-test-redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  llm-tester-test:
+    <<: *test
+    container_name: llm-tester-test
+    command: >
+      bash -lc "
+        bundle check || bundle install &&
+        yarn install --immutable &&
+        yarn build:css &&
+        bin/rails db:test:prepare &&
+        bin/rails test
+      "
+
+volumes:
+  llm-tester-test-bundle:
+  llm-tester-test-node-modules:

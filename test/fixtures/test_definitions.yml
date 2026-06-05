@@ -1,0 +1,43 @@
+exact_greeting:
+  name: Exact greeting
+  prompt: Say hello
+  response_type: exact
+  expected_response: Hello!
+  regex_pattern:
+  frequency_minutes: 60
+  llm_model: llama
+  enabled: true
+  last_run_at:
+
+approximate_greeting:
+  name: Approximate greeting
+  prompt: Say hello
+  response_type: approximate
+  expected_response:
+  regex_pattern: "(?i)hello"
+  frequency_minutes: 30
+  llm_model: llama
+  enabled: true
+  last_run_at: <%= 2.hours.ago.to_fs(:db) %>
+
+any_response:
+  name: Any response
+  prompt: Tell me a joke
+  response_type: any
+  expected_response:
+  regex_pattern:
+  frequency_minutes: 15
+  llm_model: gpt
+  enabled: true
+  last_run_at:
+
+disabled_test:
+  name: Disabled test
+  prompt: Ignored
+  response_type: any
+  expected_response:
+  regex_pattern:
+  frequency_minutes: 5
+  llm_model: llama
+  enabled: false
+  last_run_at:

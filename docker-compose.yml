@@ -1,0 +1,78 @@
+name: llm-tester
+
+x-app: &app
+  build:
+    context: .
+    dockerfile: docker/Dockerfile.dev
+  volumes:
+    - .:/rails
+    - llm-tester-bundle:/usr/local/bundle
+    - llm-tester-node-modules:/rails/node_modules
+  environment: &app-env
+    RAILS_ENV: development
+    REDIS_URL: redis://llm-tester-redis:6379/0
+  depends_on:
+    llm-tester-redis:
+      condition: service_healthy
+
+services:
+  llm-tester-web:
+    <<: *app
+    container_name: llm-tester-web
+    ports:
+      - "3000:3000"
+    command: >
+      bash -lc "
+        yarn install --immutable &&
+        yarn build:css &&
+        bin/rails db:prepare &&
+        bin/rails server -b 0.0.0.0
+      "
+
+  llm-tester-sidekiq:
+    <<: *app
+    container_name: llm-tester-sidekiq
+    command: >
+      bash -lc "
+        yarn install --immutable &&
+        yarn build:css &&
+        bundle exec sidekiq -C config/sidekiq.yml
+      "
+    depends_on:
+      llm-tester-redis:
+        condition: service_healthy
+      llm-tester-web:
+        condition: service_started
+
+  llm-tester-redis:
+    image: redis:7-alpine
+    container_name: llm-tester-redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - llm-tester-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # SQLite is used for the app database. If PostgreSQL is added later, use
+  # qualified names like llm-tester-postgres and llm-tester-postgres-data.
+  # llm-tester-postgres:
+  #   image: postgres:17-alpine
+  #   container_name: llm-tester-postgres
+  #   ports:
+  #     - "5433:5432"
+  #   environment:
+  #     POSTGRES_USER: llm_tester
+  #     POSTGRES_PASSWORD: llm_tester
+  #     POSTGRES_DB: llm_tester_development
+  #   volumes:
+  #     - llm-tester-postgres-data:/var/lib/postgresql/data
+
+volumes:
+  llm-tester-bundle:
+  llm-tester-node-modules:
+  llm-tester-redis-data:
+  # llm-tester-postgres-data:

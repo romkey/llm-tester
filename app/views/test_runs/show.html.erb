@@ -1,0 +1,57 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="mb-0">Test Run</h1>
+  <%= test_run_badge(@test_run) %>
+</div>
+
+<dl class="row">
+  <dt class="col-sm-3">Test</dt>
+  <dd class="col-sm-9"><%= @test_run.test_definition.name %></dd>
+
+  <dt class="col-sm-3">Model</dt>
+  <dd class="col-sm-9"><%= @test_run.llm_model.name %></dd>
+
+  <dt class="col-sm-3">Server</dt>
+  <dd class="col-sm-9"><%= @test_run.server.name %></dd>
+
+  <dt class="col-sm-3">Started</dt>
+  <dd class="col-sm-9"><%= l(@test_run.started_at, format: :long) if @test_run.started_at %></dd>
+
+  <dt class="col-sm-3">Finished</dt>
+  <dd class="col-sm-9"><%= l(@test_run.finished_at, format: :long) if @test_run.finished_at %></dd>
+</dl>
+
+<% if @test_run.error_message.present? %>
+  <div class="alert alert-warning">
+    <strong>Error:</strong> <%= @test_run.error_message %>
+  </div>
+<% end %>
+
+<% if @test_run.failed? %>
+  <div class="card mb-3">
+    <div class="card-header">Expected</div>
+    <div class="card-body">
+      <% if @test_run.test_definition.exact? %>
+        <pre class="mb-0"><%= @test_run.test_definition.expected_response %></pre>
+      <% elsif @test_run.test_definition.approximate? %>
+        <p class="mb-0">Regex: <code><%= @test_run.test_definition.regex_pattern %></code></p>
+      <% else %>
+        <p class="mb-0 text-muted">Any non-empty response</p>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<div class="card">
+  <div class="card-header"><%= @test_run.passed? ? "Response" : "Actual Response" %></div>
+  <div class="card-body">
+    <% if @test_run.actual_response.present? %>
+      <pre class="mb-0"><%= @test_run.actual_response %></pre>
+    <% else %>
+      <p class="text-muted mb-0">No response received.</p>
+    <% end %>
+  </div>
+</div>
+
+<div class="mt-3">
+  <%= link_to "Back to test runs", test_runs_path, class: "btn btn-outline-secondary" %>
+</div>

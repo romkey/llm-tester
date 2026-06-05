@@ -1,0 +1,11 @@
+ollama:
+  name: Ollama Local
+  hostname: localhost:11434
+  api_type: ollama
+  api_key:
+
+openai:
+  name: OpenAI Compatible
+  hostname: https://api.example.com
+  api_type: openai
+  api_key: test-key

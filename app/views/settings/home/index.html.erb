@@ -1,0 +1,17 @@
+<h1 class="mb-4">Settings</h1>
+<p class="lead">Manage inference servers, models, and test definitions.</p>
+
+<div class="list-group">
+  <%= link_to settings_servers_path, class: "list-group-item list-group-item-action" do %>
+    <strong>Servers</strong>
+    <div class="text-muted">Add Ollama or OpenAI-compatible endpoints</div>
+  <% end %>
+  <%= link_to settings_llm_models_path, class: "list-group-item list-group-item-action" do %>
+    <strong>Models</strong>
+    <div class="text-muted">Configure models available on each server</div>
+  <% end %>
+  <%= link_to settings_test_definitions_path, class: "list-group-item list-group-item-action" do %>
+    <strong>Tests</strong>
+    <div class="text-muted">Define prompts and expected responses</div>
+  <% end %>
+</div>

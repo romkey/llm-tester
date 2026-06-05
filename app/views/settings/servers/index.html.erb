@@ -1,0 +1,37 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="mb-0">Servers</h1>
+  <%= link_to "Add Server", new_settings_server_path, class: "btn btn-primary" %>
+</div>
+
+<% if @servers.any? %>
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Hostname</th>
+          <th>API Type</th>
+          <th>Key</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @servers.each do |server| %>
+          <tr>
+            <td><%= server.name %></td>
+            <td><%= server.hostname %></td>
+            <td><%= server.api_type %></td>
+            <td><%= server.api_key.present? ? "Set" : "—" %></td>
+            <td class="text-end">
+              <%= button_to "Sync Models", sync_models_settings_server_path(server), method: :post, class: "btn btn-sm btn-outline-primary" %>
+              <%= link_to "Edit", edit_settings_server_path(server), class: "btn btn-sm btn-outline-secondary" %>
+              <%= button_to "Delete", settings_server_path(server), method: :delete, class: "btn btn-sm btn-outline-danger", form: { data: { turbo_confirm: "Delete this server?" } } %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <p class="text-muted">No servers configured.</p>
+<% end %>

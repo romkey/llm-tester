@@ -1,0 +1,32 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="mb-0">Models</h1>
+  <%= link_to "Add Model", new_settings_llm_model_path, class: "btn btn-primary" %>
+</div>
+
+<% if @llm_models.any? %>
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Server</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @llm_models.each do |model| %>
+          <tr>
+            <td><%= model.name %></td>
+            <td><%= model.server.name %></td>
+            <td class="text-end">
+              <%= link_to "Edit", edit_settings_llm_model_path(model), class: "btn btn-sm btn-outline-secondary" %>
+              <%= button_to "Delete", settings_llm_model_path(model), method: :delete, class: "btn btn-sm btn-outline-danger", form: { data: { turbo_confirm: "Delete this model?" } } %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <p class="text-muted">No models configured. Sync from a server or add manually.</p>
+<% end %>

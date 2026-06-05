@@ -1,0 +1,36 @@
+<%= form_with model: [:settings, server] do |form| %>
+  <% if server.errors.any? %>
+    <div class="alert alert-danger">
+      <ul class="mb-0">
+        <% server.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="mb-3">
+    <%= form.label :name, class: "form-label" %>
+    <%= form.text_field :name, class: "form-control", required: true %>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :hostname, "IP / Hostname", class: "form-label" %>
+    <%= form.text_field :hostname, class: "form-control", required: true, placeholder: "localhost:11434" %>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :api_type, class: "form-label" %>
+    <%= form.select :api_type, Server::API_TYPES, {}, class: "form-select" %>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :api_key, "API Key (optional)", class: "form-label" %>
+    <%= form.password_field :api_key, class: "form-control", autocomplete: "off" %>
+  </div>
+
+  <div class="d-flex gap-2">
+    <%= form.submit class: "btn btn-primary" %>
+    <%= link_to "Cancel", settings_servers_path, class: "btn btn-outline-secondary" %>
+  </div>
+<% end %>

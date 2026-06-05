@@ -1,0 +1,49 @@
+<h1 class="mb-4">Servers</h1>
+
+<% if @servers.any? %>
+  <% @servers.each do |server| %>
+    <div class="card mb-4">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+          <strong><%= server.name %></strong>
+          <span class="text-muted ms-2"><%= server.hostname %> · <%= server.api_type %></span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <%= health_badge(server.health_status) %>
+          <%= button_to "Sync Models", sync_models_server_path(server), method: :post, class: "btn btn-sm btn-outline-primary" %>
+        </div>
+      </div>
+      <div class="card-body">
+        <% if server.llm_models.any? %>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Model</th>
+                  <th>Health</th>
+                  <th>Tests</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% server.llm_models.order(:name).each do |model| %>
+                  <tr>
+                    <td><%= model.name %></td>
+                    <td><%= health_badge(model.health_status) %></td>
+                    <td><%= model.test_definitions.where(enabled: true).count %></td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <p class="text-muted mb-0">No models yet. Sync models from the server or add them in Settings.</p>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+<% else %>
+  <div class="alert alert-info">
+    No servers configured yet.
+    <%= link_to "Add a server in Settings", settings_servers_path, class: "alert-link" %> to get started.
+  </div>
+<% end %>
