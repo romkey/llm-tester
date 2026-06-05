@@ -51,10 +51,10 @@ Rails.application.configure do
 
   config.active_job.queue_adapter = :sidekiq
 
-  # Docker-friendly production: use SECRET_KEY_BASE from the environment.
-  # This app does not store secrets in credentials.yml.enc.
+  # SECRET_KEY_BASE is required at runtime; SECRET_KEY_BASE_DUMMY is used during
+  # Docker asset precompile (see Dockerfile).
   config.require_master_key = false
-  config.secret_key_base = ENV.fetch("SECRET_KEY_BASE")
+  config.secret_key_base = ENV.fetch("SECRET_KEY_BASE") { ENV.fetch("SECRET_KEY_BASE_DUMMY") }
 
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
