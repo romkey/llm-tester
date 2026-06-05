@@ -36,7 +36,7 @@ RUN apt-get update -qq && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Install JavaScript dependencies
-ARG NODE_VERSION=24.2.0
+ARG NODE_VERSION=24.16.0
 ARG YARN_VERSION=latest
 ENV PATH=/usr/local/node/bin:$PATH
 RUN curl -sL https://github.com/nodenv/node-build/archive/master.tar.gz | tar xz -C /tmp/ && \
@@ -73,6 +73,11 @@ RUN rm -rf node_modules
 
 # Final stage for app image
 FROM base
+
+ARG APP_VERSION=dev
+ARG GITHUB_REPO_URL=
+ENV APP_VERSION=${APP_VERSION} \
+    GITHUB_REPO_URL=${GITHUB_REPO_URL}
 
 # Run and own only the runtime files as a non-root user for security
 RUN groupadd --system --gid 1000 rails && \

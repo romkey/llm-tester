@@ -6,6 +6,7 @@ A Rails 8 skeleton for testing LLM inference servers locally. Built with Ruby, S
 
 - Ruby 3.4.3
 - Rails 8.1.3
+- Node.js 24 LTS
 - SQLite 3
 - Bootstrap 5 (cssbundling-rails)
 - Sidekiq 8 + Redis 7
@@ -71,16 +72,27 @@ Or via Docker Compose (see table above).
 
 ## Production image
 
-The root `Dockerfile` builds a production image. GitHub Actions publishes to GHCR on pushes to `main` with the `latest` tag.
+The root `Dockerfile` builds a production image. GitHub Actions publishes to GHCR **only when you push a version tag** (e.g. `v1.0.0`).
 
 ```bash
-docker build -t llm-tester .
+git tag v1.0.0
+git push origin v1.0.0
 ```
+
+That triggers the **Docker Publish** workflow, which builds the image tagged with the version, semver aliases, and `latest`.
+
+```bash
+docker build -t llm-tester --build-arg APP_VERSION=v1.0.0 --build-arg GITHUB_REPO_URL=https://github.com/romkey/llm-tester .
+```
+
+The app footer shows the version and a link to the GitHub repository.
 
 ## Environment variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
+| `APP_VERSION` | git tag / `dev` | Version shown in the footer |
+| `GITHUB_REPO_URL` | git `origin` remote | GitHub link shown in the footer |
 | `REDIS_URL` | `redis://localhost:6379/0` | Redis connection for Sidekiq |
 | `SIDEKIQ_CONCURRENCY` | `5` | Sidekiq worker concurrency |
 

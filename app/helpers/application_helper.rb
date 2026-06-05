@@ -22,6 +22,18 @@ module ApplicationHelper
     end
   end
 
+  def app_version
+    AppVersion.current
+  end
+
+  def github_repo_url
+    AppVersion.github_repo_url
+  end
+
+  def github_repo_label
+    AppVersion.github_repo_label
+  end
+
   def pagy_nav(pagy)
     pagy.series_nav if pagy.pages > 1
   end

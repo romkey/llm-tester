@@ -10,9 +10,9 @@
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
-  <body>
+  <body class="d-flex flex-column min-vh-100">
     <%= render "shared/navbar" %>
-    <main class="container pb-5">
+    <main class="container pb-5 flex-grow-1">
       <%= render "shared/flash" %>
       <div class="row">
         <div class="col-md-3">
@@ -23,5 +23,6 @@
         </div>
       </div>
     </main>
+    <%= render "shared/footer" %>
   </body>
 </html>

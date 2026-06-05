@@ -1,0 +1,8 @@
+<footer class="border-top mt-auto py-3 text-muted small">
+  <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <span>Version <%= app_version %></span>
+    <% if github_repo_url.present? %>
+      <%= link_to github_repo_label || "GitHub", github_repo_url, target: "_blank", rel: "noopener noreferrer" %>
+    <% end %>
+  </div>
+</footer>
