@@ -21,4 +21,16 @@ class ServersControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_url
     assert LlmModel.exists?(name: "synced-model")
   end
+
+  test "sync_models works for openai compatible servers" do
+    stub_request(:get, "https://api.example.com/v1/models")
+      .to_return(status: 200, body: { data: [ { id: "synced-openai-model" } ] }.to_json)
+
+    assert_difference "LlmModel.count", 1 do
+      post sync_models_server_url(servers(:openai))
+    end
+
+    assert_redirected_to root_url
+    assert LlmModel.exists?(name: "synced-openai-model")
+  end
 end
