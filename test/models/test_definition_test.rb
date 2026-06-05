@@ -101,4 +101,28 @@ class TestDefinitionTest < ActiveSupport::TestCase
 
     assert_equal run, definition.latest_run_for(model)
   end
+
+  test "accepts valid image attachment" do
+    definition = test_definitions(:exact_greeting)
+    definition.image.attach(
+      io: File.open(file_fixture("sample.png")),
+      filename: "sample.png",
+      content_type: "image/png"
+    )
+
+    assert_predicate definition, :valid?
+    assert definition.image.attached?
+  end
+
+  test "rejects unsupported image content type" do
+    definition = test_definitions(:exact_greeting)
+    definition.image.attach(
+      io: StringIO.new("not an image"),
+      filename: "sample.txt",
+      content_type: "text/plain"
+    )
+
+    assert_not definition.valid?
+    assert_includes definition.errors[:image].first, "PNG, JPEG, GIF, or WebP"
+  end
 end

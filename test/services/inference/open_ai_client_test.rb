@@ -18,4 +18,27 @@ class InferenceOpenAiClientTest < ActiveSupport::TestCase
     assert result.latency_ms.positive?
     assert result.tokens_per_second.positive?
   end
+
+  test "complete sends multimodal content when images provided" do
+    image = Inference::ImageEncoder::EncodedImage.new(base64: "abc123", content_type: "image/png")
+
+    stub_request(:post, "https://api.example.com/v1/chat/completions")
+      .with { |request|
+        body = JSON.parse(request.body)
+        content = body.dig("messages", 0, "content")
+        content.is_a?(Array) &&
+          content.any? { |part| part["type"] == "text" && part["text"] == "What is this?" } &&
+          content.any? { |part|
+            part["type"] == "image_url" &&
+              part.dig("image_url", "url") == "data:image/png;base64,abc123"
+          }
+      }
+      .to_return(status: 200, body: {
+        choices: [ { message: { content: "A pixel" } } ],
+        usage: { prompt_tokens: 20, completion_tokens: 3 }
+      }.to_json)
+
+    result = Inference::OpenAiClient.new(servers(:openai)).complete("gpt-4o", "What is this?", images: [ image ])
+    assert_equal "A pixel", result.text
+  end
 end

@@ -8,13 +8,16 @@ module Inference
       models.map { |model| model.fetch("name") }
     end
 
-    def complete(model_name, prompt)
+    def complete(model_name, prompt, images: [])
       started_at = Time.current
-      response = post("/api/generate", {
+      body = {
         model: model_name,
         prompt: prompt,
         stream: false
-      })
+      }
+      body[:images] = images.map(&:base64) if images.any?
+
+      response = post("/api/generate", body)
 
       build_completion_result(
         started_at: started_at,

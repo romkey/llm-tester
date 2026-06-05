@@ -31,6 +31,17 @@ class InferenceOllamaClientTest < ActiveSupport::TestCase
     assert_in_delta 50.0, result.tokens_per_second
   end
 
+  test "complete includes base64 images in payload" do
+    image = Inference::ImageEncoder::EncodedImage.new(base64: "abc123", content_type: "image/png")
+
+    stub_request(:post, "http://localhost:11434/api/generate")
+      .with(body: hash_including("model" => "llava", "prompt" => "Describe", "images" => [ "abc123" ]))
+      .to_return(status: 200, body: { response: "A red pixel" }.to_json)
+
+    result = @client.complete("llava", "Describe", images: [ image ])
+    assert_equal "A red pixel", result.text
+  end
+
   test "raises inference error on connection failure" do
     stub_request(:get, "http://localhost:11434/api/tags").to_raise(Errno::ECONNREFUSED)
 

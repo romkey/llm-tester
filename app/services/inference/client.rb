@@ -25,7 +25,7 @@ module Inference
       raise NotImplementedError
     end
 
-    def complete(model_name, prompt)
+    def complete(model_name, prompt, images: [])
       raise NotImplementedError
     end
 

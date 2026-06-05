@@ -35,6 +35,22 @@
   </div>
 
   <div class="mb-3">
+    <%= form_label_with_requirement form, :image, text: "Image", optional: true,
+          hint: "Optional. Sent with the prompt for vision-capable models." %>
+    <%= form.file_field :image, class: "form-control", accept: "image/png,image/jpeg,image/gif,image/webp" %>
+    <% if test_definition.image.attached? %>
+      <div class="mt-2">
+        <%= image_tag test_definition.image, class: "img-thumbnail", style: "max-height: 120px" %>
+        <p class="form-text mb-0"><%= test_definition.image.filename %></p>
+        <div class="form-check mt-2">
+          <%= check_box_tag "test_definition[remove_image]", "1", false, class: "form-check-input", id: "test_definition_remove_image" %>
+          <%= label_tag "test_definition_remove_image", "Remove image", class: "form-check-label" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="mb-3">
     <%= form_label_with_requirement form, :response_type, required: true %>
     <%= form.select :response_type, TestDefinition::RESPONSE_TYPES, {}, class: "form-select", required: true %>
   </div>

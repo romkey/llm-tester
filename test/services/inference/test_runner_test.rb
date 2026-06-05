@@ -44,4 +44,21 @@ class InferenceTestRunnerTest < ActiveSupport::TestCase
     assert run.error?
     assert_includes run.error_message, "Could not reach Ollama server"
   end
+
+  test "sends attached image with prompt" do
+    definition = test_definitions(:exact_greeting)
+    definition.image.attach(
+      io: File.open(file_fixture("sample.png")),
+      filename: "sample.png",
+      content_type: "image/png"
+    )
+    expected_image = Base64.strict_encode64(file_fixture("sample.png").read)
+
+    stub_request(:post, "http://localhost:11434/api/generate")
+      .with(body: hash_including("images" => [ expected_image ]))
+      .to_return(status: 200, body: { response: "Hello!" }.to_json)
+
+    run = Inference::TestRunner.run(definition)
+    assert run.passed?
+  end
 end

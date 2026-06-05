@@ -20,7 +20,8 @@ module Inference
 
       begin
         client = Client.for(@llm_model.server)
-        result = client.complete(@llm_model.name, definition.prompt)
+        images = ImageEncoder.from_attachment(definition.image)
+        result = client.complete(@llm_model.name, definition.prompt, images: images)
         status = ResponseMatcher.match?(definition, result.text) ? "passed" : "failed"
       rescue Error => e
         status = "error"

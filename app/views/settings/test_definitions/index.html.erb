@@ -10,6 +10,7 @@
         <tr>
           <th>Name</th>
           <th>Model</th>
+          <th>Image</th>
           <th>Response Type</th>
           <th>Frequency</th>
           <th>Enabled</th>
@@ -21,6 +22,7 @@
           <tr>
             <td><%= test.name %></td>
             <td><%= test.model_label %></td>
+            <td><%= test.image.attached? ? "Yes" : "—" %></td>
             <td><%= test.response_type %></td>
             <td><%= test.frequency_minutes %> min</td>
             <td><%= test.enabled? ? "Yes" : "No" %></td>

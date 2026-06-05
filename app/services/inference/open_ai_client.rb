@@ -7,11 +7,11 @@ module Inference
       response.fetch("data", []).map { |model| model.fetch("id") }
     end
 
-    def complete(model_name, prompt)
+    def complete(model_name, prompt, images: [])
       started_at = Time.current
       response = post("/v1/chat/completions", {
         model: model_name,
-        messages: [ { role: "user", content: prompt } ]
+        messages: [ build_user_message(prompt, images) ]
       })
 
       usage = response["usage"] || {}
@@ -24,6 +24,20 @@ module Inference
     end
 
     private
+
+    def build_user_message(prompt, images)
+      return { role: "user", content: prompt } if images.empty?
+
+      content = [ { type: "text", text: prompt } ]
+      images.each do |image|
+        content << {
+          type: "image_url",
+          image_url: { url: "data:#{image.content_type};base64,#{image.base64}" }
+        }
+      end
+
+      { role: "user", content: content }
+    end
 
     def get(path)
       request(:get, path)

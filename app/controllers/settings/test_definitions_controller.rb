@@ -26,6 +26,8 @@ module Settings
     end
 
     def update
+      purge_image_if_requested
+
       if @test_definition.update(test_definition_params)
         redirect_to settings_test_definitions_path, notice: "Test updated."
       else
@@ -52,8 +54,14 @@ module Settings
     def test_definition_params
       params.expect(test_definition: %i[
         name prompt response_type expected_response regex_pattern
-        frequency_minutes llm_model_id enabled run_on_all_models
+        frequency_minutes llm_model_id enabled run_on_all_models image
       ])
+    end
+
+    def purge_image_if_requested
+      return unless params.dig(:test_definition, :remove_image) == "1"
+
+      @test_definition.image.purge
     end
   end
 end

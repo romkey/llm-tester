@@ -2,9 +2,12 @@
 
 class TestDefinition < ApplicationRecord
   RESPONSE_TYPES = %w[exact approximate any].freeze
+  ALLOWED_IMAGE_CONTENT_TYPES = %w[image/png image/jpeg image/gif image/webp].freeze
+  MAX_IMAGE_SIZE = 10.megabytes
 
   belongs_to :llm_model, optional: true
   has_many :test_runs, dependent: :destroy
+  has_one_attached :image
 
   validates :name, presence: true
   validates :prompt, presence: true
@@ -15,6 +18,7 @@ class TestDefinition < ApplicationRecord
   validates :llm_model, presence: true, unless: :run_on_all_models?
   validate :regex_pattern_must_be_valid, if: -> { approximate? && regex_pattern.present? }
   validate :llm_model_must_be_blank_for_all_models
+  validate :acceptable_image
 
   before_validation :clear_llm_model_when_running_on_all_models
 
@@ -85,5 +89,17 @@ class TestDefinition < ApplicationRecord
     Regexp.new(regex_pattern)
   rescue RegexpError => e
     errors.add(:regex_pattern, "is invalid: #{e.message}")
+  end
+
+  def acceptable_image
+    return unless image.attached?
+
+    unless image.content_type.in?(ALLOWED_IMAGE_CONTENT_TYPES)
+      errors.add(:image, "must be a PNG, JPEG, GIF, or WebP file")
+    end
+
+    return unless image.byte_size > MAX_IMAGE_SIZE
+
+    errors.add(:image, "must be less than 10 MB")
   end
 end
