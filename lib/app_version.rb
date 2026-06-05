@@ -1,25 +1,37 @@
 # frozen_string_literal: true
 
 module AppVersion
+  ROOT = File.expand_path("..", __dir__)
+  VERSION_FILE = File.join(ROOT, "VERSION")
+  REPOSITORY_FILE = File.join(ROOT, "config", "github_repository")
+
   module_function
 
   def current
-    from_env || from_git || "dev"
+    from_version_file || from_git || "dev"
   end
 
   def github_repo_url
-    ENV["GITHUB_REPO_URL"].presence || from_git_remote
+    slug = github_repo_slug
+    return unless slug
+
+    "https://github.com/#{slug}"
   end
 
   def github_repo_label
-    url = github_repo_url
-    return unless url
-
-    url.delete_prefix("https://github.com/").delete_suffix(".git")
+    github_repo_slug
   end
 
-  def from_env
-    ENV["APP_VERSION"].presence
+  def github_repo_slug
+    from_repository_file || from_git_remote_slug
+  end
+
+  def from_version_file
+    read_file(VERSION_FILE)
+  end
+
+  def from_repository_file
+    read_file(REPOSITORY_FILE)
   end
 
   def from_git
@@ -32,22 +44,30 @@ module AppVersion
     describe.presence
   end
 
-  def from_git_remote
+  def from_git_remote_slug
     return unless git_available?
 
     remote = `git remote get-url origin 2>/dev/null`.strip
     return if remote.blank?
 
-    parse_github_remote(remote)
+    parse_github_remote_slug(remote)
   end
 
-  def parse_github_remote(remote)
+  def parse_github_remote_slug(remote)
     if remote.start_with?("git@github.com:")
-      "https://github.com/#{remote.delete_prefix("git@github.com:").delete_suffix(".git")}"
+      remote.delete_prefix("git@github.com:").delete_suffix(".git")
     elsif remote.include?("github.com")
-      uri = remote.sub(%r{\Agit://}, "https://").sub(%r{\.git\z}, "")
-      uri.start_with?("http") ? uri : "https://#{uri}"
+      remote.sub(%r{\Agit://}, "https://")
+          .sub(%r{\Ahttps?://github\.com/}, "")
+          .delete_suffix(".git")
+          .presence
     end
+  end
+
+  def read_file(path)
+    return unless File.file?(path)
+
+    File.read(path).strip.presence
   end
 
   def git_available?

@@ -80,13 +80,15 @@ git tag v1.0.0
 git push origin v1.0.0
 ```
 
+Update the `VERSION` file in the same commit as each release tag (e.g. `v1.0.0`). The footer reads it at runtime; Docker images include it automatically.
+
 That triggers the **Docker Publish** workflow, which builds the image tagged with the version, semver aliases, and `latest`.
 
 ```bash
-docker build -t llm-tester --build-arg APP_VERSION=v1.0.0 --build-arg GITHUB_REPO_URL=https://github.com/romkey/llm-tester .
+docker build -t llm-tester .
 ```
 
-The app footer shows the version and a link to the GitHub repository.
+The app footer shows the version from the `VERSION` file and a GitHub link from `config/github_repository`.
 
 ## Production deployment
 
@@ -104,16 +106,16 @@ docker compose -f docker-compose.production.yml up -d
 
 Open [http://localhost:8080](http://localhost:8080) (or the port set in `LLM_TESTER_PORT`).
 
-SQLite databases and uploaded files are stored in the **`llm-tester-prod-storage`** Docker volume mounted at `/rails/storage`, so data survives container rebuilds and image upgrades. Set `LLM_TESTER_VERSION` in `.env.production` to pin a release tag (e.g. `v1.0.1`).
+SQLite databases and uploaded files are stored in the **`llm-tester-prod-storage`** Docker volume mounted at `/rails/storage`, so data survives container rebuilds and image upgrades. The running version is shown in the app footer (from the `VERSION` file baked into the image).
 
 ## Environment variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `SECRET_KEY_BASE` | — (required in production) | Rails secret for production Docker deploys |
-| `APP_VERSION` | git tag / `dev` | Version shown in the footer |
-| `GITHUB_REPO_URL` | git `origin` remote | GitHub link shown in the footer |
 | `REDIS_URL` | `redis://localhost:6379/0` | Redis connection for Sidekiq |
 | `SIDEKIQ_CONCURRENCY` | `5` | Sidekiq worker concurrency |
+
+Version and GitHub repository metadata come from `VERSION` and `config/github_repository` in the repo (with git fallbacks in local development). No environment variables needed.
 
 No authentication is configured. This app is intended for friendly local environments only.

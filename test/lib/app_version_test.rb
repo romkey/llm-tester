@@ -3,45 +3,28 @@
 require "test_helper"
 
 class AppVersionTest < ActiveSupport::TestCase
-  setup do
-    @original_version = ENV["APP_VERSION"]
-    @original_repo_url = ENV["GITHUB_REPO_URL"]
-    ENV.delete("APP_VERSION")
-    ENV.delete("GITHUB_REPO_URL")
+  test "current reads VERSION file" do
+    assert_equal File.read(AppVersion::VERSION_FILE).strip, AppVersion.current
   end
 
-  teardown do
-    if @original_version
-      ENV["APP_VERSION"] = @original_version
-    else
-      ENV.delete("APP_VERSION")
-    end
-
-    if @original_repo_url
-      ENV["GITHUB_REPO_URL"] = @original_repo_url
-    else
-      ENV.delete("GITHUB_REPO_URL")
-    end
-  end
-
-  test "current prefers APP_VERSION env" do
-    ENV["APP_VERSION"] = "v1.2.3"
-    assert_equal "v1.2.3", AppVersion.current
-  end
-
-  test "github_repo_url prefers env" do
-    ENV["GITHUB_REPO_URL"] = "https://github.com/romkey/llm-tester"
+  test "github_repo_url reads config/github_repository" do
     assert_equal "https://github.com/romkey/llm-tester", AppVersion.github_repo_url
     assert_equal "romkey/llm-tester", AppVersion.github_repo_label
   end
 
-  test "parse_github_remote handles ssh remotes" do
-    assert_equal "https://github.com/romkey/llm-tester",
-      AppVersion.parse_github_remote("git@github.com:romkey/llm-tester.git")
+  test "parse_github_remote_slug handles ssh remotes" do
+    assert_equal "romkey/llm-tester",
+      AppVersion.parse_github_remote_slug("git@github.com:romkey/llm-tester.git")
   end
 
-  test "parse_github_remote handles https remotes" do
-    assert_equal "https://github.com/romkey/llm-tester",
-      AppVersion.parse_github_remote("https://github.com/romkey/llm-tester.git")
+  test "parse_github_remote_slug handles https remotes" do
+    assert_equal "romkey/llm-tester",
+      AppVersion.parse_github_remote_slug("https://github.com/romkey/llm-tester.git")
+  end
+
+  test "from_git returns a value in a git checkout" do
+    skip "Not a git repository" unless AppVersion.send(:git_available?)
+
+    assert AppVersion.from_git.present?
   end
 end

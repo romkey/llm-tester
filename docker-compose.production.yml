@@ -13,7 +13,7 @@
 name: llm-tester-production
 
 x-app-image: &app-image
-  image: ghcr.io/romkey/llm-tester:${LLM_TESTER_VERSION:-latest}
+  image: ghcr.io/romkey/llm-tester:latest
   env_file:
     - path: .env
       required: false
@@ -23,8 +23,6 @@ x-app-image: &app-image
     RAILS_ENV: production
     SECRET_KEY_BASE: ${SECRET_KEY_BASE:?Set SECRET_KEY_BASE in .env or .env.production}
     REDIS_URL: redis://llm-tester-prod-redis:6379/0
-    GITHUB_REPO_URL: https://github.com/romkey/llm-tester
-    APP_VERSION: ${LLM_TESTER_VERSION:-latest}
   volumes:
     - llm-tester-prod-storage:/rails/storage
   depends_on:
