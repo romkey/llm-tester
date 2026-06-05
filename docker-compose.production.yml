@@ -1,0 +1,72 @@
+# Production deployment using the published GHCR image.
+#
+# Setup:
+#   cp .env.production.example .env.production
+#   # Set SECRET_KEY_BASE in .env or .env.production (bin/rails secret)
+#   docker login ghcr.io
+#   docker compose -f docker-compose.production.yml pull
+#   docker compose -f docker-compose.production.yml up -d
+#
+# SQLite databases and Active Storage files live in the llm-tester-prod-storage
+# volume and survive image upgrades and container rebuilds.
+
+name: llm-tester-production
+
+x-app-image: &app-image
+  image: ghcr.io/romkey/llm-tester:${LLM_TESTER_VERSION:-latest}
+  env_file:
+    - path: .env
+      required: false
+    - path: .env.production
+      required: false
+  environment: &app-env
+    RAILS_ENV: production
+    SECRET_KEY_BASE: ${SECRET_KEY_BASE:?Set SECRET_KEY_BASE in .env or .env.production}
+    REDIS_URL: redis://llm-tester-prod-redis:6379/0
+    GITHUB_REPO_URL: https://github.com/romkey/llm-tester
+    APP_VERSION: ${LLM_TESTER_VERSION:-latest}
+  volumes:
+    - llm-tester-prod-storage:/rails/storage
+  depends_on:
+    llm-tester-prod-redis:
+      condition: service_healthy
+  restart: unless-stopped
+
+services:
+  llm-tester-prod-web:
+    <<: *app-image
+    container_name: llm-tester-prod-web
+    ports:
+      - "${LLM_TESTER_PORT:-8080}:80"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/up"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  llm-tester-prod-sidekiq:
+    <<: *app-image
+    container_name: llm-tester-prod-sidekiq
+    command: bundle exec sidekiq -C config/sidekiq.yml
+    depends_on:
+      llm-tester-prod-redis:
+        condition: service_healthy
+      llm-tester-prod-web:
+        condition: service_healthy
+
+  llm-tester-prod-redis:
+    image: redis:7-alpine
+    container_name: llm-tester-prod-redis
+    volumes:
+      - llm-tester-prod-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  llm-tester-prod-storage:
+  llm-tester-prod-redis-data:

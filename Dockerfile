@@ -3,7 +3,7 @@
 
 # This Dockerfile builds the production image. Build and run by hand:
 # docker build -t llm_tester .
-# docker run -d -p 80:80 -e RAILS_MASTER_KEY=<value from config/master.key> --name llm_tester llm_tester
+# docker run -d -p 80:80 -e SECRET_KEY_BASE=<secret> --name llm_tester llm_tester
 
 # For a containerized dev environment, see Dev Containers: https://guides.rubyonrails.org/getting_started_with_devcontainer.html
 

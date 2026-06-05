@@ -35,6 +35,7 @@ Redis is exposed on port **6380** (mapped from container port 6379) to avoid col
 | Project | Command | Purpose |
 |---------|---------|---------|
 | Development | `docker compose up --build` | Web app + Sidekiq + Redis |
+| Production | `docker compose -f docker-compose.production.yml up -d` | Published GHCR image + persistent SQLite |
 | Tests | `docker compose -f docker-compose.test.yml up --build --abort-on-container-exit` | Run test suite |
 | Lint | `docker compose -f docker-compose.lint.yml up --build --abort-on-container-exit` | Run RuboCop |
 
@@ -87,10 +88,29 @@ docker build -t llm-tester --build-arg APP_VERSION=v1.0.0 --build-arg GITHUB_REP
 
 The app footer shows the version and a link to the GitHub repository.
 
+## Production deployment
+
+Use `docker-compose.production.yml` to run the published image from GHCR with persistent SQLite storage.
+
+```bash
+cp .env.production.example .env.production
+# Generate a secret once: bin/rails secret
+# Paste into .env or .env.production as SECRET_KEY_BASE=...
+
+docker login ghcr.io
+docker compose -f docker-compose.production.yml pull
+docker compose -f docker-compose.production.yml up -d
+```
+
+Open [http://localhost:8080](http://localhost:8080) (or the port set in `LLM_TESTER_PORT`).
+
+SQLite databases and uploaded files are stored in the **`llm-tester-prod-storage`** Docker volume mounted at `/rails/storage`, so data survives container rebuilds and image upgrades. Set `LLM_TESTER_VERSION` in `.env.production` to pin a release tag (e.g. `v1.0.1`).
+
 ## Environment variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
+| `SECRET_KEY_BASE` | — (required in production) | Rails secret for production Docker deploys |
 | `APP_VERSION` | git tag / `dev` | Version shown in the footer |
 | `GITHUB_REPO_URL` | git `origin` remote | GitHub link shown in the footer |
 | `REDIS_URL` | `redis://localhost:6379/0` | Redis connection for Sidekiq |
