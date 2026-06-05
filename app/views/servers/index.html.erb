@@ -20,16 +20,18 @@
               <thead>
                 <tr>
                   <th>Model</th>
+                  <th>Enabled</th>
                   <th>Health</th>
                   <th>Tests</th>
                 </tr>
               </thead>
               <tbody>
                 <% server.llm_models.order(:name).each do |model| %>
-                  <tr>
+                  <tr class="<%= "text-muted" unless model.enabled? %>">
                     <td><%= model.name %></td>
+                    <td><%= model.enabled? ? "Yes" : "No" %></td>
                     <td><%= health_badge(model.health_status) %></td>
-                    <td><%= model.applicable_test_definitions.count %></td>
+                    <td><%= model.enabled? ? model.applicable_test_definitions.count : "—" %></td>
                   </tr>
                 <% end %>
               </tbody>

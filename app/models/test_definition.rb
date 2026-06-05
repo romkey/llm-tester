@@ -29,9 +29,9 @@ class TestDefinition < ApplicationRecord
 
   def target_models
     if run_on_all_models?
-      LlmModel.includes(:server).order("servers.name ASC", "llm_models.name ASC")
+      LlmModel.enabled.includes(:server).order("servers.name ASC", "llm_models.name ASC")
     else
-      LlmModel.where(id: llm_model_id)
+      LlmModel.enabled.where(id: llm_model_id)
     end
   end
 

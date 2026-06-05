@@ -10,48 +10,52 @@
   <% end %>
 
   <div class="mb-3">
-    <%= form.label :name, class: "form-label" %>
+    <%= form_label_with_requirement form, :name, required: true %>
     <%= form.text_field :name, class: "form-control", required: true %>
   </div>
 
-  <div class="form-check mb-3">
-    <%= form.check_box :run_on_all_models, class: "form-check-input", data: { test_definition_form_target: "allModels", action: "test-definition-form#toggleModel" } %>
-    <%= form.label :run_on_all_models, "Run on all models", class: "form-check-label" %>
+  <div class="mb-3">
+    <%= form_check_label_with_requirement form, :run_on_all_models,
+          text: "Run on all models",
+          optional: true,
+          hint: "When enabled, the model field is not used.",
+          check_box_options: {
+            data: { test_definition_form_target: "allModels", action: "test-definition-form#toggleModel" }
+          } %>
   </div>
 
   <div class="mb-3" data-test-definition-form-target="modelField">
-    <%= form.label :llm_model_id, "Model", class: "form-label" %>
-    <%= form.collection_select :llm_model_id, LlmModel.includes(:server).order("servers.name", "llm_models.name"), :id, :label_with_server, { include_blank: "Select a model" }, class: "form-select" %>
+    <%= form_label_with_requirement form, :llm_model_id, text: "Model", required: true, hint: "Not used when Run on all models is enabled." %>
+    <%= form.collection_select :llm_model_id, LlmModel.for_selection(current_id: test_definition.llm_model_id), :id, :label_with_server, { include_blank: "Select a model" }, class: "form-select" %>
   </div>
 
   <div class="mb-3">
-    <%= form.label :prompt, class: "form-label" %>
+    <%= form_label_with_requirement form, :prompt, required: true %>
     <%= form.text_area :prompt, class: "form-control", rows: 4, required: true %>
   </div>
 
   <div class="mb-3">
-    <%= form.label :response_type, class: "form-label" %>
-    <%= form.select :response_type, TestDefinition::RESPONSE_TYPES, {}, class: "form-select" %>
+    <%= form_label_with_requirement form, :response_type, required: true %>
+    <%= form.select :response_type, TestDefinition::RESPONSE_TYPES, {}, class: "form-select", required: true %>
   </div>
 
   <div class="mb-3">
-    <%= form.label :expected_response, "Expected Response (exact match)", class: "form-label" %>
+    <%= form_label_with_requirement form, :expected_response, text: "Expected Response", optional: true, hint: "Required when response type is Exact." %>
     <%= form.text_area :expected_response, class: "form-control", rows: 3 %>
   </div>
 
   <div class="mb-3">
-    <%= form.label :regex_pattern, "Regex Pattern (approximate match)", class: "form-label" %>
+    <%= form_label_with_requirement form, :regex_pattern, text: "Regex Pattern", optional: true, hint: "Required when response type is Approximate." %>
     <%= form.text_field :regex_pattern, class: "form-control" %>
   </div>
 
   <div class="mb-3">
-    <%= form.label :frequency_minutes, "Run every (minutes)", class: "form-label" %>
+    <%= form_label_with_requirement form, :frequency_minutes, text: "Run every (minutes)", required: true %>
     <%= form.number_field :frequency_minutes, class: "form-control", min: 1, required: true %>
   </div>
 
-  <div class="form-check mb-3">
-    <%= form.check_box :enabled, class: "form-check-input" %>
-    <%= form.label :enabled, class: "form-check-label" %>
+  <div class="mb-3">
+    <%= form_check_label_with_requirement form, :enabled, text: "Enabled", optional: true, hint: "Disabled tests are not run on schedule." %>
   </div>
 
   <div class="d-flex gap-2">

@@ -7,6 +7,14 @@ class LlmModel < ApplicationRecord
 
   validates :name, presence: true, uniqueness: { scope: :server_id }
 
+  scope :enabled, -> { where(enabled: true) }
+
+  def self.for_selection(current_id: nil)
+    ids = enabled.pluck(:id)
+    ids << current_id if current_id.present?
+    includes(:server).where(id: ids.compact.uniq).order("servers.name ASC", "llm_models.name ASC")
+  end
+
   def label_with_server
     "#{name} (#{server.name})"
   end
@@ -16,6 +24,8 @@ class LlmModel < ApplicationRecord
   end
 
   def healthy?
+    return true unless enabled?
+
     definitions = applicable_test_definitions
     return true if definitions.none?
 
@@ -23,6 +33,7 @@ class LlmModel < ApplicationRecord
   end
 
   def health_status
+    return :disabled unless enabled?
     return :unknown if applicable_test_definitions.none?
 
     healthy? ? :healthy : :unhealthy

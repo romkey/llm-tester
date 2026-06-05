@@ -10,13 +10,17 @@
   <% end %>
 
   <div class="mb-3">
-    <%= form.label :name, class: "form-label" %>
+    <%= form_label_with_requirement form, :name, required: true %>
     <%= form.text_field :name, class: "form-control", required: true %>
   </div>
 
   <div class="mb-3">
-    <%= form.label :server_id, "Server", class: "form-label" %>
-    <%= form.collection_select :server_id, Server.order(:name), :id, :name, { prompt: "Select a server" }, class: "form-select" %>
+    <%= form_label_with_requirement form, :server_id, text: "Server", required: true %>
+    <%= form.collection_select :server_id, Server.order(:name), :id, :name, { prompt: "Select a server" }, class: "form-select", required: true %>
+  </div>
+
+  <div class="mb-3">
+    <%= form_check_label_with_requirement form, :enabled, text: "Enabled", optional: true, hint: "Disabled models are skipped by tests and excluded from health checks." %>
   </div>
 
   <div class="d-flex gap-2">

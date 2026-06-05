@@ -28,7 +28,7 @@ class RunTestJobTest < ActiveJob::TestCase
     stub_request(:post, "https://api.example.com/v1/chat/completions")
       .to_return(status: 200, body: { choices: [ { message: { content: "pong" } } ] }.to_json)
 
-    assert_difference "TestRun.count", LlmModel.count do
+    assert_difference "TestRun.count", LlmModel.enabled.count do
       perform_enqueued_jobs do
         RunTestJob.perform_later(definition.id)
       end

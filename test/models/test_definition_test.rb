@@ -39,7 +39,14 @@ class TestDefinitionTest < ActiveSupport::TestCase
     )
 
     assert_predicate definition, :valid?
-    assert_equal LlmModel.count, definition.target_models.count
+    assert_equal LlmModel.enabled.count, definition.target_models.count
+  end
+
+  test "all models target excludes disabled models" do
+    definition = test_definitions(:all_models_ping)
+
+    assert_not_includes definition.target_models, llm_models(:disabled_model)
+    assert_includes definition.target_models, llm_models(:llama)
   end
 
   test "clears model when run on all models" do

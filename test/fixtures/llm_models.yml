@@ -1,7 +1,14 @@
 llama:
   name: llama3
   server: ollama
+  enabled: true
 
 gpt:
   name: gpt-4o-mini
   server: openai
+  enabled: true
+
+disabled_model:
+  name: deprecated-model
+  server: ollama
+  enabled: false

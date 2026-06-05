@@ -10,22 +10,22 @@
   <% end %>
 
   <div class="mb-3">
-    <%= form.label :name, class: "form-label" %>
+    <%= form_label_with_requirement form, :name, required: true %>
     <%= form.text_field :name, class: "form-control", required: true %>
   </div>
 
   <div class="mb-3">
-    <%= form.label :hostname, "IP / Hostname", class: "form-label" %>
+    <%= form_label_with_requirement form, :hostname, text: "IP / Hostname", required: true %>
     <%= form.text_field :hostname, class: "form-control", required: true, placeholder: "localhost:11434" %>
   </div>
 
   <div class="mb-3">
-    <%= form.label :api_type, class: "form-label" %>
-    <%= form.select :api_type, Server::API_TYPES, {}, class: "form-select" %>
+    <%= form_label_with_requirement form, :api_type, required: true %>
+    <%= form.select :api_type, Server::API_TYPES, {}, class: "form-select", required: true %>
   </div>
 
   <div class="mb-3">
-    <%= form.label :api_key, "API Key (optional)", class: "form-label" %>
+    <%= form_label_with_requirement form, :api_key, text: "API Key", optional: true, hint: "Only needed for servers that require authentication." %>
     <%= form.password_field :api_key, class: "form-control", autocomplete: "off" %>
   </div>
 

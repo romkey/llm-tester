@@ -54,4 +54,24 @@ class LlmModelTest < ActiveSupport::TestCase
     model = llm_models(:llama)
     assert_equal "llama3 (Ollama Local)", model.label_with_server
   end
+
+  test "disabled model reports disabled health status" do
+    model = llm_models(:disabled_model)
+    assert_equal :disabled, model.health_status
+    assert model.healthy?
+  end
+
+  test "for_selection includes current model when disabled" do
+    model = llm_models(:disabled_model)
+    selection = LlmModel.for_selection(current_id: model.id)
+
+    assert_includes selection, model
+  end
+
+  test "for_selection excludes disabled models without current id" do
+    selection = LlmModel.for_selection
+
+    assert_not_includes selection, llm_models(:disabled_model)
+    assert_includes selection, llm_models(:llama)
+  end
 end

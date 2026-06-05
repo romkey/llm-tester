@@ -10,6 +10,7 @@
         <tr>
           <th>Name</th>
           <th>Server</th>
+          <th>Enabled</th>
           <th></th>
         </tr>
       </thead>
@@ -18,6 +19,7 @@
           <tr>
             <td><%= model.name %></td>
             <td><%= model.server.name %></td>
+            <td><%= model.enabled? ? "Yes" : "No" %></td>
             <td class="text-end">
               <%= link_to "Edit", edit_settings_llm_model_path(model), class: "btn btn-sm btn-outline-secondary" %>
               <%= button_to "Delete", settings_llm_model_path(model), method: :delete, class: "btn btn-sm btn-outline-danger", form: { data: { turbo_confirm: "Delete this model?" } } %>

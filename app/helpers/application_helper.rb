@@ -7,6 +7,8 @@ module ApplicationHelper
       tag.span("Healthy", class: "badge text-bg-success")
     when :unhealthy
       tag.span("Unhealthy", class: "badge text-bg-danger")
+    when :disabled
+      tag.span("Disabled", class: "badge text-bg-secondary")
     else
       tag.span("Unknown", class: "badge text-bg-secondary")
     end

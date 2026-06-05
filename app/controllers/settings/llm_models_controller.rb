@@ -12,7 +12,7 @@ module Settings
     end
 
     def new
-      @llm_model = LlmModel.new
+      @llm_model = LlmModel.new(enabled: true)
     end
 
     def create
@@ -48,7 +48,7 @@ module Settings
     end
 
     def llm_model_params
-      params.expect(llm_model: %i[name server_id])
+      params.expect(llm_model: %i[name server_id enabled])
     end
   end
 end

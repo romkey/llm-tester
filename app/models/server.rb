@@ -19,11 +19,14 @@ class Server < ApplicationRecord
   end
 
   def healthy?
-    llm_models.exists? && llm_models.all?(&:healthy?)
+    models = llm_models.enabled
+    return true if models.none?
+
+    models.all?(&:healthy?)
   end
 
   def health_status
-    return :unknown if llm_models.none?
+    return :unknown if llm_models.enabled.none?
 
     healthy? ? :healthy : :unhealthy
   end

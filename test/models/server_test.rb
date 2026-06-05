@@ -45,4 +45,27 @@ class ServerTest < ActiveSupport::TestCase
     assert_not server.healthy?
     assert_equal :unhealthy, server.health_status
   end
+
+  test "ignores disabled models for health" do
+    server = servers(:ollama)
+    disabled = llm_models(:disabled_model)
+
+    test_definitions(:exact_greeting).test_runs.create!(
+      llm_model: disabled,
+      server: server,
+      status: "failed",
+      actual_response: "nope",
+      started_at: Time.current,
+      finished_at: Time.current
+    )
+
+    assert server.healthy?
+  end
+
+  test "unknown health when all models disabled" do
+    server = servers(:ollama)
+    server.llm_models.update_all(enabled: false)
+
+    assert_equal :unknown, server.health_status
+  end
 end
