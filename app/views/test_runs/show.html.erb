@@ -18,6 +18,22 @@
 
   <dt class="col-sm-3">Finished</dt>
   <dd class="col-sm-9"><%= l(@test_run.finished_at, format: :long) if @test_run.finished_at %></dd>
+
+  <dt class="col-sm-3">Latency</dt>
+  <dd class="col-sm-9"><%= format_ms(@test_run.latency_ms) %></dd>
+
+  <dt class="col-sm-3">Tokens / sec</dt>
+  <dd class="col-sm-9"><%= format_tokens_per_second(@test_run.tokens_per_second) %></dd>
+
+  <dt class="col-sm-3">Tokens</dt>
+  <dd class="col-sm-9">
+    <% if @test_run.prompt_tokens.present? || @test_run.completion_tokens.present? %>
+      Prompt: <%= @test_run.prompt_tokens || "—" %>,
+      Completion: <%= @test_run.completion_tokens || "—" %>
+    <% else %>
+      —
+    <% end %>
+  </dd>
 </dl>
 
 <% if @test_run.error_message.present? %>

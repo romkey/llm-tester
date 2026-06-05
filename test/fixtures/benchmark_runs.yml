@@ -1,0 +1,56 @@
+llama_latest:
+  llm_model: llama
+  server: ollama
+  status: passed
+  error_message:
+  started_at: <%= 30.minutes.ago.to_fs(:db) %>
+  finished_at: <%= 30.minutes.ago.to_fs(:db) %>
+  created_at: <%= 30.minutes.ago.to_fs(:db) %>
+  updated_at: <%= 30.minutes.ago.to_fs(:db) %>
+  prompt_tokens: 512
+  generation_tokens: 32
+  context_depth: 0
+  prompt_tokens_per_second: 1234.5
+  generation_tokens_per_second: 56.7
+  peak_generation_tokens_per_second: 58.2
+  time_to_first_token_ms: 420.5
+  estimated_prompt_processing_ms: 380.2
+  raw_report: "{}"
+
+gpt_latest:
+  llm_model: gpt
+  server: openai
+  status: passed
+  error_message:
+  started_at: <%= 20.minutes.ago.to_fs(:db) %>
+  finished_at: <%= 20.minutes.ago.to_fs(:db) %>
+  created_at: <%= 20.minutes.ago.to_fs(:db) %>
+  updated_at: <%= 20.minutes.ago.to_fs(:db) %>
+  prompt_tokens: 512
+  generation_tokens: 32
+  context_depth: 0
+  prompt_tokens_per_second: 2100.0
+  generation_tokens_per_second: 72.4
+  peak_generation_tokens_per_second: 74.0
+  time_to_first_token_ms: 310.0
+  estimated_prompt_processing_ms: 280.0
+  raw_report: "{}"
+
+llama_old:
+  llm_model: llama
+  server: ollama
+  status: passed
+  error_message:
+  started_at: <%= 2.hours.ago.to_fs(:db) %>
+  finished_at: <%= 2.hours.ago.to_fs(:db) %>
+  created_at: <%= 2.hours.ago.to_fs(:db) %>
+  updated_at: <%= 2.hours.ago.to_fs(:db) %>
+  prompt_tokens: 512
+  generation_tokens: 32
+  context_depth: 0
+  prompt_tokens_per_second: 1100.0
+  generation_tokens_per_second: 50.0
+  peak_generation_tokens_per_second: 52.0
+  time_to_first_token_ms: 450.0
+  estimated_prompt_processing_ms: 400.0
+  raw_report: "{}"

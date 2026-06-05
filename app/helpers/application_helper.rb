@@ -39,4 +39,16 @@ module ApplicationHelper
   def pagy_nav(pagy)
     pagy.series_nav if pagy.pages > 1
   end
+
+  def format_ms(value)
+    return "—" if value.nil?
+
+    "#{number_with_precision(value, precision: 1, delimiter: ',')} ms"
+  end
+
+  def format_tokens_per_second(value)
+    return "—" if value.nil?
+
+    "#{number_with_precision(value, precision: 1, delimiter: ',')} t/s"
+  end
 end

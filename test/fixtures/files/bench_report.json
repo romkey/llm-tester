@@ -1,0 +1,43 @@
+{
+  "version": "0.3.6",
+  "timestamp": "2026-02-07 19:09:00Z",
+  "latency_mode": "generation",
+  "latency_ms": 1.27,
+  "model": "llama3",
+  "prefix_caching_enabled": false,
+  "max_concurrency": 1,
+  "benchmarks": [
+    {
+      "concurrency": 1,
+      "context_size": 0,
+      "prompt_size": 512,
+      "response_size": 32,
+      "is_context_prefill_phase": false,
+      "pp_throughput": {
+        "mean": 1234.5,
+        "std": 10.0,
+        "values": [1234.5]
+      },
+      "tg_throughput": {
+        "mean": 56.7,
+        "std": 1.2,
+        "values": [56.7]
+      },
+      "peak_throughput": {
+        "mean": 58.2,
+        "std": 1.0,
+        "values": [58.2]
+      },
+      "e2e_ttft": {
+        "mean": 420.5,
+        "std": 5.0,
+        "values": [420.5]
+      },
+      "est_ppt": {
+        "mean": 380.2,
+        "std": 4.0,
+        "values": [380.2]
+      }
+    }
+  ]
+}

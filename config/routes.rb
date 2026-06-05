@@ -12,6 +12,7 @@ Rails.application.routes.draw do
   end
 
   resources :test_runs, only: %i[index show], path: "tests"
+  resources :benchmarks, only: %i[index]
 
   namespace :settings do
     root to: "home#index"

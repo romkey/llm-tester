@@ -4,6 +4,7 @@ class LlmModel < ApplicationRecord
   belongs_to :server
   has_many :test_definitions, dependent: :destroy
   has_many :test_runs, dependent: :destroy
+  has_many :benchmark_runs, dependent: :destroy
 
   validates :name, presence: true, uniqueness: { scope: :server_id }
 

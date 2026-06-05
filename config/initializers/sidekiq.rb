@@ -11,6 +11,14 @@ Sidekiq.configure_server do |config|
         class: "RunScheduledTestsJob"
       )
     end
+
+    unless Sidekiq::Cron::Job.find("Run scheduled benchmarks")
+      Sidekiq::Cron::Job.create(
+        name: "Run scheduled benchmarks",
+        cron: "0 * * * *",
+        class: "RunScheduledBenchmarksJob"
+      )
+    end
   end
 end
 

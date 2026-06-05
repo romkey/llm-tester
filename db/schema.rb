@@ -10,7 +10,30 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_05_205017) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_05_210633) do
+  create_table "benchmark_runs", force: :cascade do |t|
+    t.integer "context_depth"
+    t.datetime "created_at", null: false
+    t.text "error_message"
+    t.float "estimated_prompt_processing_ms"
+    t.datetime "finished_at"
+    t.integer "generation_tokens"
+    t.float "generation_tokens_per_second"
+    t.integer "llm_model_id", null: false
+    t.float "peak_generation_tokens_per_second"
+    t.integer "prompt_tokens"
+    t.float "prompt_tokens_per_second"
+    t.text "raw_report"
+    t.integer "server_id", null: false
+    t.datetime "started_at"
+    t.string "status", null: false
+    t.float "time_to_first_token_ms"
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_benchmark_runs_on_created_at"
+    t.index ["llm_model_id"], name: "index_benchmark_runs_on_llm_model_id"
+    t.index ["server_id"], name: "index_benchmark_runs_on_server_id"
+  end
+
   create_table "llm_models", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.boolean "enabled", default: true, null: false
@@ -49,14 +72,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_05_205017) do
 
   create_table "test_runs", force: :cascade do |t|
     t.text "actual_response"
+    t.integer "completion_tokens"
     t.datetime "created_at", null: false
     t.text "error_message"
     t.datetime "finished_at"
+    t.float "latency_ms"
     t.integer "llm_model_id", null: false
+    t.integer "prompt_tokens"
     t.integer "server_id", null: false
     t.datetime "started_at"
     t.string "status", null: false
     t.integer "test_definition_id", null: false
+    t.float "tokens_per_second"
     t.datetime "updated_at", null: false
     t.index ["created_at"], name: "index_test_runs_on_created_at"
     t.index ["llm_model_id"], name: "index_test_runs_on_llm_model_id"
@@ -65,6 +92,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_05_205017) do
     t.index ["test_definition_id"], name: "index_test_runs_on_test_definition_id"
   end
 
+  add_foreign_key "benchmark_runs", "llm_models"
+  add_foreign_key "benchmark_runs", "servers"
   add_foreign_key "llm_models", "servers"
   add_foreign_key "test_definitions", "llm_models"
   add_foreign_key "test_runs", "llm_models"

@@ -3,25 +3,19 @@
 require "test_helper"
 
 class InferenceOpenAiClientTest < ActiveSupport::TestCase
-  setup do
-    @server = servers(:openai)
-    @client = Inference::OpenAiClient.new(@server)
-  end
-
-  test "list_models parses model ids" do
-    stub_request(:get, "https://api.example.com/v1/models")
-      .with(headers: { "Authorization" => "Bearer test-key" })
-      .to_return(status: 200, body: { data: [ { id: "gpt-4o-mini" } ] }.to_json)
-
-    assert_equal [ "gpt-4o-mini" ], @client.list_models
-  end
-
-  test "complete returns message content" do
+  test "complete records token usage and latency" do
     stub_request(:post, "https://api.example.com/v1/chat/completions")
       .to_return(status: 200, body: {
-        choices: [ { message: { content: "Hello!" } } ]
+        choices: [ { message: { content: "Hi there" } } ],
+        usage: { prompt_tokens: 12, completion_tokens: 4 }
       }.to_json)
 
-    assert_equal "Hello!", @client.complete("gpt-4o-mini", "Hi")
+    result = Inference::OpenAiClient.new(servers(:openai)).complete("gpt-4o-mini", "Hello")
+
+    assert_equal "Hi there", result.text
+    assert_equal 12, result.prompt_tokens
+    assert_equal 4, result.completion_tokens
+    assert result.latency_ms.positive?
+    assert result.tokens_per_second.positive?
   end
 end

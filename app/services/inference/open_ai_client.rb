@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-require "net/http"
-require "json"
-require "uri"
-
 module Inference
   class OpenAiClient < Client
     def list_models
@@ -12,11 +8,19 @@ module Inference
     end
 
     def complete(model_name, prompt)
+      started_at = Time.current
       response = post("/v1/chat/completions", {
         model: model_name,
         messages: [ { role: "user", content: prompt } ]
       })
-      response.dig("choices", 0, "message", "content").to_s
+
+      usage = response["usage"] || {}
+      CompletionResult.from_timed(
+        started_at: started_at,
+        text: response.dig("choices", 0, "message", "content").to_s,
+        prompt_tokens: usage["prompt_tokens"],
+        completion_tokens: usage["completion_tokens"]
+      )
     end
 
     private

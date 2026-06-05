@@ -21,6 +21,11 @@ class ServerTest < ActiveSupport::TestCase
     assert_equal "https://api.example.com", server.base_url
   end
 
+  test "openai_compatible_base_url appends v1" do
+    assert_equal "http://localhost:11434/v1", servers(:ollama).openai_compatible_base_url
+    assert_equal "https://api.example.com/v1", servers(:openai).openai_compatible_base_url
+  end
+
   test "healthy when all models are healthy" do
     server = servers(:ollama)
     assert server.healthy?

@@ -6,6 +6,7 @@ class Server < ApplicationRecord
   has_many :llm_models, dependent: :destroy
   has_many :test_definitions, through: :llm_models
   has_many :test_runs, dependent: :destroy
+  has_many :benchmark_runs, dependent: :destroy
 
   validates :name, presence: true, uniqueness: true
   validates :hostname, presence: true
@@ -16,6 +17,11 @@ class Server < ApplicationRecord
     return hostname if hostname.match?(%r{\Ahttps?://}i)
 
     "http://#{hostname}"
+  end
+
+  def openai_compatible_base_url
+    url = base_url.chomp("/")
+    url.end_with?("/v1") ? url : "#{url}/v1"
   end
 
   def healthy?

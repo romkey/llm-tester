@@ -74,6 +74,13 @@ RUN rm -rf node_modules
 # Final stage for app image
 FROM base
 
+# llama-benchy for hourly model benchmarks
+USER root
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y python3 python3-pip && \
+    pip3 install --break-system-packages llama-benchy && \
+    rm -rf /var/lib/apt/lists /var/cache/apt/archives
+
 # Run and own only the runtime files as a non-root user for security
 RUN groupadd --system --gid 1000 rails && \
     useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash

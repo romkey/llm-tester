@@ -1,0 +1,85 @@
+<h1 class="mb-4">Benchmarks</h1>
+
+<p class="text-muted">Latest llama-benchy results per enabled model. Benchmarks run hourly against all enabled models.</p>
+
+<% if @latest_runs.any? %>
+  <div class="card mb-4">
+    <div class="card-header">Latest Results</div>
+    <div class="table-responsive">
+      <table class="table table-sm align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>Server</th>
+            <th>Status</th>
+            <th>PP t/s</th>
+            <th>TG t/s</th>
+            <th>Peak TG t/s</th>
+            <th>TTFT</th>
+            <th>Prompt ms</th>
+            <th>When</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @latest_runs.each do |run| %>
+            <tr class="<%= "text-muted" unless run.passed? %>">
+              <td><%= run.llm_model.name %></td>
+              <td><%= run.server.name %></td>
+              <td>
+                <% if run.passed? %>
+                  <%= tag.span("Passed", class: "badge text-bg-success") %>
+                <% else %>
+                  <%= tag.span("Error", class: "badge text-bg-warning") %>
+                <% end %>
+              </td>
+              <td><%= format_tokens_per_second(run.prompt_tokens_per_second) %></td>
+              <td><%= format_tokens_per_second(run.generation_tokens_per_second) %></td>
+              <td><%= format_tokens_per_second(run.peak_generation_tokens_per_second) %></td>
+              <td><%= format_ms(run.time_to_first_token_ms) %></td>
+              <td><%= format_ms(run.estimated_prompt_processing_ms) %></td>
+              <td><%= l(run.created_at, format: :short) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+<% else %>
+  <div class="alert alert-info">No benchmark results yet. Hourly benchmarks run automatically when Sidekiq is active.</div>
+<% end %>
+
+<% if @recent_runs.any? %>
+  <h2 class="h4 mb-3">Recent Runs</h2>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle">
+      <thead>
+        <tr>
+          <th>Model</th>
+          <th>Server</th>
+          <th>Status</th>
+          <th>PP t/s</th>
+          <th>TG t/s</th>
+          <th>When</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @recent_runs.each do |run| %>
+          <tr class="<%= "text-muted" unless run.passed? %>">
+            <td><%= run.llm_model.name %></td>
+            <td><%= run.server.name %></td>
+            <td>
+              <% if run.passed? %>
+                <%= tag.span("Passed", class: "badge text-bg-success") %>
+              <% else %>
+                <%= tag.span("Error", class: "badge text-bg-warning") %>
+              <% end %>
+            </td>
+            <td><%= format_tokens_per_second(run.prompt_tokens_per_second) %></td>
+            <td><%= format_tokens_per_second(run.generation_tokens_per_second) %></td>
+            <td><%= l(run.created_at, format: :short) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% end %>

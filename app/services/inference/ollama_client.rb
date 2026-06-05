@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-require "net/http"
-require "json"
-require "uri"
-
 module Inference
   class OllamaClient < Client
     def list_models
@@ -13,15 +9,45 @@ module Inference
     end
 
     def complete(model_name, prompt)
+      started_at = Time.current
       response = post("/api/generate", {
         model: model_name,
         prompt: prompt,
         stream: false
       })
-      response.fetch("response")
+
+      build_completion_result(
+        started_at: started_at,
+        text: response.fetch("response"),
+        prompt_tokens: response["prompt_eval_count"],
+        completion_tokens: response["eval_count"],
+        generation_duration_ns: response["eval_duration"]
+      )
     end
 
     private
+
+    def build_completion_result(started_at:, text:, prompt_tokens:, completion_tokens:, generation_duration_ns:)
+      latency_ms = ((Time.current - started_at) * 1000).round(1)
+      tokens_per_second = compute_tokens_per_second(
+        completion_tokens: completion_tokens,
+        generation_duration_ns: generation_duration_ns
+      )
+
+      CompletionResult.new(
+        text: text,
+        latency_ms: latency_ms,
+        tokens_per_second: tokens_per_second,
+        prompt_tokens: prompt_tokens,
+        completion_tokens: completion_tokens
+      )
+    end
+
+    def compute_tokens_per_second(completion_tokens:, generation_duration_ns:)
+      return unless completion_tokens && generation_duration_ns&.positive?
+
+      (completion_tokens / (generation_duration_ns / 1_000_000_000.0)).round(2)
+    end
 
     def get(path)
       request(:get, path)
