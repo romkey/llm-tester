@@ -12,6 +12,23 @@ class LlmModelTest < ActiveSupport::TestCase
     assert llm_models(:llama).healthy?
   end
 
+  test "includes all-models tests in health check" do
+    model = llm_models(:llama)
+    definition = test_definitions(:all_models_ping)
+
+    definition.test_runs.create!(
+      llm_model: model,
+      server: model.server,
+      status: "failed",
+      actual_response: "nope",
+      started_at: Time.current,
+      finished_at: Time.current
+    )
+
+    assert_not model.healthy?
+    assert_includes model.applicable_test_definitions, definition
+  end
+
   test "unhealthy when latest enabled test failed" do
     model = llm_models(:llama)
     test_definitions(:approximate_greeting).test_runs.create!(
@@ -29,6 +46,7 @@ class LlmModelTest < ActiveSupport::TestCase
   test "unknown health when no enabled tests" do
     model = llm_models(:llama)
     model.test_definitions.update_all(enabled: false)
+    TestDefinition.where(run_on_all_models: true).update_all(enabled: false)
     assert_equal :unknown, model.health_status
   end
 

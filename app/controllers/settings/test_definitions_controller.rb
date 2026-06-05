@@ -2,13 +2,10 @@
 
 module Settings
   class TestDefinitionsController < BaseController
-    before_action :set_test_definition, only: %i[show edit update destroy run_now]
+    before_action :set_test_definition, only: %i[edit update destroy run_now]
 
     def index
       @test_definitions = TestDefinition.includes(llm_model: :server).order(:name)
-    end
-
-    def show
     end
 
     def new
@@ -55,7 +52,7 @@ module Settings
     def test_definition_params
       params.expect(test_definition: %i[
         name prompt response_type expected_response regex_pattern
-        frequency_minutes llm_model_id enabled
+        frequency_minutes llm_model_id enabled run_on_all_models
       ])
     end
   end

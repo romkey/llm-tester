@@ -14,9 +14,14 @@
     <%= form.text_field :name, class: "form-control", required: true %>
   </div>
 
-  <div class="mb-3">
+  <div class="form-check mb-3">
+    <%= form.check_box :run_on_all_models, class: "form-check-input", data: { test_definition_form_target: "allModels", action: "test-definition-form#toggleModel" } %>
+    <%= form.label :run_on_all_models, "Run on all models", class: "form-check-label" %>
+  </div>
+
+  <div class="mb-3" data-test-definition-form-target="modelField">
     <%= form.label :llm_model_id, "Model", class: "form-label" %>
-    <%= form.collection_select :llm_model_id, LlmModel.includes(:server).order("servers.name", "llm_models.name"), :id, :label_with_server, { prompt: "Select a model" }, class: "form-select" %>
+    <%= form.collection_select :llm_model_id, LlmModel.includes(:server).order("servers.name", "llm_models.name"), :id, :label_with_server, { include_blank: "Select a model" }, class: "form-select" %>
   </div>
 
   <div class="mb-3">

@@ -37,3 +37,23 @@ any_passed_run:
   error_message:
   started_at: <%= 20.minutes.ago.to_fs(:db) %>
   finished_at: <%= 20.minutes.ago.to_fs(:db) %>
+
+all_models_llama_passed:
+  test_definition: all_models_ping
+  llm_model: llama
+  server: ollama
+  status: passed
+  actual_response: pong
+  error_message:
+  started_at: <%= 10.minutes.ago.to_fs(:db) %>
+  finished_at: <%= 10.minutes.ago.to_fs(:db) %>
+
+all_models_gpt_passed:
+  test_definition: all_models_ping
+  llm_model: gpt
+  server: openai
+  status: passed
+  actual_response: pong
+  error_message:
+  started_at: <%= 10.minutes.ago.to_fs(:db) %>
+  finished_at: <%= 10.minutes.ago.to_fs(:db) %>

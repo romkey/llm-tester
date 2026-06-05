@@ -23,6 +23,26 @@ module Settings
       assert_redirected_to settings_test_definitions_url
     end
 
+    test "create all models test definition" do
+      assert_difference "TestDefinition.count", 1 do
+        post settings_test_definitions_url, params: {
+          test_definition: {
+            name: "Global test",
+            prompt: "Say hi",
+            response_type: "any",
+            frequency_minutes: 30,
+            run_on_all_models: true,
+            enabled: true
+          }
+        }
+      end
+
+      definition = TestDefinition.order(:id).last
+      assert definition.run_on_all_models?
+      assert_nil definition.llm_model_id
+      assert_redirected_to settings_test_definitions_url
+    end
+
     test "run_now enqueues job" do
       definition = test_definitions(:exact_greeting)
 

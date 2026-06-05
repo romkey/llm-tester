@@ -2,12 +2,14 @@
 
 module Inference
   class TestRunner
-    def self.run(definition)
-      new(definition).run
+    def self.run(definition, llm_model: definition.llm_model)
+      new(definition, llm_model: llm_model).run
     end
 
-    def initialize(definition)
+    def initialize(definition, llm_model:)
       @definition = definition
+      @llm_model = llm_model
+      raise ArgumentError, "llm_model is required" if @llm_model.nil?
     end
 
     def run
@@ -17,8 +19,8 @@ module Inference
       status = "passed"
 
       begin
-        client = Client.for(definition.server)
-        actual_response = client.complete(definition.llm_model.name, definition.prompt)
+        client = Client.for(@llm_model.server)
+        actual_response = client.complete(@llm_model.name, definition.prompt)
         status = ResponseMatcher.match?(definition, actual_response) ? "passed" : "failed"
       rescue Error => e
         status = "error"
@@ -27,19 +29,16 @@ module Inference
 
       finished_at = Time.current
 
-      test_run = TestRun.create!(
+      TestRun.create!(
         test_definition: definition,
-        llm_model: definition.llm_model,
-        server: definition.server,
+        llm_model: @llm_model,
+        server: @llm_model.server,
         status: status,
         actual_response: actual_response,
         error_message: error_message,
         started_at: started_at,
         finished_at: finished_at
       )
-
-      definition.update!(last_run_at: finished_at)
-      test_run
     end
 
     private

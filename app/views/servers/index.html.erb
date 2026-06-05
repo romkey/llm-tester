@@ -29,7 +29,7 @@
                   <tr>
                     <td><%= model.name %></td>
                     <td><%= health_badge(model.health_status) %></td>
-                    <td><%= model.test_definitions.where(enabled: true).count %></td>
+                    <td><%= model.applicable_test_definitions.count %></td>
                   </tr>
                 <% end %>
               </tbody>

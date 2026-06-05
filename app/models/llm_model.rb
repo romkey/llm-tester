@@ -11,17 +11,19 @@ class LlmModel < ApplicationRecord
     "#{name} (#{server.name})"
   end
 
-  def healthy?
-    enabled_test_definitions = test_definitions.where(enabled: true)
-    return true if enabled_test_definitions.none?
+  def applicable_test_definitions
+    TestDefinition.enabled.for_model(self)
+  end
 
-    enabled_test_definitions.all? do |definition|
-      definition.latest_run&.passed?
-    end
+  def healthy?
+    definitions = applicable_test_definitions
+    return true if definitions.none?
+
+    definitions.all? { |definition| definition.passed_for_model?(self) }
   end
 
   def health_status
-    return :unknown if test_definitions.where(enabled: true).none?
+    return :unknown if applicable_test_definitions.none?
 
     healthy? ? :healthy : :unhealthy
   end

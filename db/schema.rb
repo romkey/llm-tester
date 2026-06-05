@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_05_151825) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_05_203744) do
   create_table "llm_models", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "name", null: false
@@ -36,11 +36,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_05_151825) do
     t.text "expected_response"
     t.integer "frequency_minutes", default: 60, null: false
     t.datetime "last_run_at"
-    t.integer "llm_model_id", null: false
+    t.integer "llm_model_id"
     t.string "name", null: false
     t.text "prompt", null: false
     t.string "regex_pattern"
     t.string "response_type", default: "exact", null: false
+    t.boolean "run_on_all_models", default: false, null: false
     t.datetime "updated_at", null: false
     t.index ["llm_model_id"], name: "index_test_definitions_on_llm_model_id"
   end

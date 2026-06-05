@@ -31,6 +31,18 @@ any_response:
   enabled: true
   last_run_at:
 
+all_models_ping:
+  name: All models ping
+  prompt: Say pong
+  response_type: any
+  expected_response:
+  regex_pattern:
+  frequency_minutes: 60
+  llm_model:
+  run_on_all_models: true
+  enabled: true
+  last_run_at:
+
 disabled_test:
   name: Disabled test
   prompt: Ignored

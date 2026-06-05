@@ -14,8 +14,6 @@ class InferenceTestRunnerTest < ActiveSupport::TestCase
       assert run.passed?
       assert_equal "Hello!", run.actual_response
     end
-
-    assert definition.reload.last_run_at.present?
   end
 
   test "records failed run when response does not match" do

@@ -20,7 +20,7 @@
         <% @test_definitions.each do |test| %>
           <tr>
             <td><%= test.name %></td>
-            <td><%= test.llm_model.name %> (<%= test.server.name %>)</td>
+            <td><%= test.model_label %></td>
             <td><%= test.response_type %></td>
             <td><%= test.frequency_minutes %> min</td>
             <td><%= test.enabled? ? "Yes" : "No" %></td>
