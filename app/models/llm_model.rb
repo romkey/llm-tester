@@ -24,6 +24,12 @@ class LlmModel < ApplicationRecord
     TestDefinition.enabled.for_model(self)
   end
 
+  def health_check_results
+    applicable_test_definitions.order(:name).map do |definition|
+      { definition: definition, latest_run: definition.latest_run_for(self) }
+    end
+  end
+
   def healthy?
     return true unless enabled?
 

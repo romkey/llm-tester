@@ -1,0 +1,60 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="mb-0"><%= @llm_model.name %></h1>
+    <span class="text-muted"><%= @llm_model.server.name %> · <%= @llm_model.server.hostname %></span>
+  </div>
+  <%= health_badge(@llm_model.health_status) %>
+</div>
+
+<% unless @llm_model.enabled? %>
+  <div class="alert alert-secondary">This model is disabled, so it is skipped by tests and excluded from health checks.</div>
+<% end %>
+
+<h2 class="h4 mb-3">Health Checks</h2>
+
+<% if @health_checks.any? %>
+  <p class="text-muted">Each enabled test that applies to this model. A model is unhealthy when any check below is not passing.</p>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle">
+      <thead>
+        <tr>
+          <th>Test</th>
+          <th>Result</th>
+          <th>Reason</th>
+          <th>When</th>
+          <th class="text-end">Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @health_checks.each do |check| %>
+          <% run = check[:latest_run] %>
+          <tr class="<%= "table-warning" if run.nil? || !run.passed? %>">
+            <td><%= check[:definition].name %></td>
+            <td>
+              <% if run %>
+                <%= test_run_badge(run) %>
+              <% else %>
+                <%= tag.span("Not run", class: "badge text-bg-secondary") %>
+              <% end %>
+            </td>
+            <td><%= test_run_reason(run) %></td>
+            <td><%= run ? l(run.created_at, format: :short) : "—" %></td>
+            <td class="text-end">
+              <% if run %>
+                <%= link_to "View", test_run_path(run), class: "btn btn-sm btn-outline-secondary" %>
+              <% else %>
+                —
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <div class="alert alert-info">No enabled tests apply to this model, so its health is unknown.</div>
+<% end %>
+
+<div class="mt-3">
+  <%= link_to "Back to servers", root_path, class: "btn btn-outline-secondary" %>
+</div>

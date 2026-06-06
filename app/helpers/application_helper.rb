@@ -24,6 +24,14 @@ module ApplicationHelper
     end
   end
 
+  def test_run_reason(test_run)
+    return "Test has not been run yet." if test_run.nil?
+    return "Passed." if test_run.passed?
+    return test_run.error_message.presence || "Request failed before a response was received." if test_run.error?
+
+    "Response did not match the expected result."
+  end
+
   def app_version
     AppVersion.current
   end
