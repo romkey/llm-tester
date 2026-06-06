@@ -53,6 +53,18 @@ class SqliteToPostgresMigratorTest < ActiveSupport::TestCase
     assert_equal 1, target_count("gizmos")
   end
 
+  test "inserts referenced tables before their dependents so foreign keys hold" do
+    # gizmos.widget_id references widgets; with foreign keys enforced the copy
+    # only succeeds if widgets are inserted first. (gizmos sorts before widgets
+    # alphabetically, so this fails without dependency ordering.)
+    @target_class.connection.execute("PRAGMA foreign_keys = ON")
+
+    migrate!
+
+    gizmo = @target_class.connection.select_one("SELECT widget_id FROM gizmos")
+    assert_equal 1, gizmo["widget_id"]
+  end
+
   test "casts sqlite integers and strings to the target column types" do
     migrate!
 
@@ -92,7 +104,7 @@ class SqliteToPostgresMigratorTest < ActiveSupport::TestCase
 
     connection.create_table(:gizmos, force: true) do |t|
       t.string :label
-      t.integer :widget_id
+      t.references :widget, foreign_key: true
     end
 
     connection.execute("CREATE TABLE IF NOT EXISTS schema_migrations (version varchar PRIMARY KEY)")

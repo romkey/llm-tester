@@ -5,9 +5,11 @@
 #
 # It walks every table that exists in both the source and the target, casts
 # each value through the target's column types (so SQLite's 0/1 booleans and
-# string timestamps land correctly in PostgreSQL), and inserts the rows while
-# referential integrity is disabled. Primary-key sequences are reset afterwards
-# on PostgreSQL so future inserts don't collide with the migrated ids.
+# string timestamps land correctly in PostgreSQL), and inserts the rows in
+# foreign-key dependency order (referenced tables first) so the copy succeeds
+# without superuser privileges to disable referential integrity. Primary-key
+# sequences are reset afterwards on PostgreSQL so future inserts don't collide
+# with the migrated ids.
 #
 # Usage:
 #   DATABASE_ADAPTER=postgresql bin/rails db:migrate_from_sqlite
@@ -39,9 +41,7 @@ class SqliteToPostgresMigrator
       raise ArgumentError, "SQLite database not found: #{@sqlite_path}"
     end
 
-    target_connection.disable_referential_integrity do
-      tables.each { |table| @results[table] = copy_table(table) }
-    end
+    ordered_tables.each { |table| @results[table] = copy_table(table) }
 
     reset_sequences if postgresql_target?
     @results
@@ -75,6 +75,32 @@ class SqliteToPostgresMigrator
   def tables
     shared = source_connection.tables & target_connection.tables
     shared - EXCLUDED_TABLES
+  end
+
+  # Orders tables so that every table is copied after the tables it references
+  # via foreign keys. This lets the copy run with referential integrity intact
+  # (no superuser required). Self-references are ignored and any dependency
+  # cycle falls back to discovery order.
+  def ordered_tables
+    to_copy = tables
+    dependencies = to_copy.index_with do |table|
+      target_connection.foreign_keys(table).map(&:to_table).uniq & to_copy
+    end
+
+    ordered = []
+    visiting = []
+
+    visit = lambda do |table|
+      return if ordered.include?(table) || visiting.include?(table)
+
+      visiting.push(table)
+      dependencies.fetch(table, []).each { |dep| visit.call(dep) unless dep == table }
+      visiting.pop
+      ordered.push(table)
+    end
+
+    to_copy.each { |table| visit.call(table) }
+    ordered
   end
 
   def copy_table(table)
