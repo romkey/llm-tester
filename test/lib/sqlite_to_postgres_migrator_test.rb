@@ -53,6 +53,16 @@ class SqliteToPostgresMigratorTest < ActiveSupport::TestCase
     assert_equal 1, target_count("gizmos")
   end
 
+  test "preserves UTC timestamps even when the app time zone is not UTC" do
+    # SQLite stores naive UTC strings; a non-UTC Time.zone must not shift them.
+    Time.use_zone("America/Los_Angeles") do
+      migrate!
+    end
+
+    created_at = @target_class.connection.select_value("SELECT created_at FROM widgets WHERE id = 1")
+    assert_includes created_at.to_s, "2026-01-02 03:04:05"
+  end
+
   test "inserts referenced tables before their dependents so foreign keys hold" do
     # gizmos.widget_id references widgets; with foreign keys enforced the copy
     # only succeeds if widgets are inserted first. (gizmos sorts before widgets

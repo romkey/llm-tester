@@ -41,7 +41,13 @@ class SqliteToPostgresMigrator
       raise ArgumentError, "SQLite database not found: #{@sqlite_path}"
     end
 
-    ordered_tables.each { |table| @results[table] = copy_table(table) }
+    # SQLite stores timestamps as naive UTC strings (ActiveRecord.default_timezone
+    # is :utc). Force the application zone to UTC while casting so time-zone-aware
+    # attributes interpret those strings as UTC instead of the local zone, which
+    # would otherwise shift every migrated timestamp by the UTC offset.
+    Time.use_zone("UTC") do
+      ordered_tables.each { |table| @results[table] = copy_table(table) }
+    end
 
     reset_sequences if postgresql_target?
     @results
