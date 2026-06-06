@@ -15,16 +15,13 @@ require "yaml"
 #   DATABASE_USERNAME
 #   DATABASE_PASSWORD
 #
-# In production the cache, queue, and cable databases follow the chosen adapter
-# too: for PostgreSQL they become <DATABASE_NAME>_cache/_queue/_cable.
+# Every environment uses a single database. solid_cache and solid_cable keep
+# their tables alongside the application schema (see config/cache.yml and
+# config/cable.yml), so there is no separate cache/queue/cable database.
 module DatabaseConfig
   SQLITE_ADAPTER = "sqlite3"
   POSTGRESQL_ADAPTER = "postgresql"
   POSTGRESQL_ALIASES = %w[postgresql postgres pg].freeze
-
-  # Roles used by the multi-database production setup. Non-primary roles back
-  # solid_cache, solid_queue, and solid_cable.
-  PRODUCTION_ROLES = %i[primary cache queue cable].freeze
 
   module_function
 
@@ -47,9 +44,7 @@ module DatabaseConfig
     Integer(ENV.fetch("RAILS_MAX_THREADS", 5))
   end
 
-  # Returns the full parsed configuration as a Hash keyed by environment. The
-  # development and test environments use a single (primary) database; the
-  # production environment splits into primary/cache/queue/cable.
+  # Returns the full parsed configuration as a Hash keyed by environment.
   def configuration
     {
       "development" => environment_config("development"),
@@ -64,38 +59,24 @@ module DatabaseConfig
   end
 
   def environment_config(env)
-    if env == "production"
-      PRODUCTION_ROLES.each_with_object({}) do |role, config|
-        config[role.to_s] = connection_config(env, role)
-      end
-    else
-      connection_config(env, :primary)
-    end
+    postgresql? ? postgresql_connection(env) : sqlite_connection(env)
   end
 
-  def connection_config(env, role)
-    base = postgresql? ? postgresql_connection(env, role) : sqlite_connection(env, role)
-    base["migrations_paths"] = "db/#{role}_migrate" unless role == :primary
-    base
-  end
-
-  def sqlite_connection(env, role)
-    suffix = role == :primary ? "" : "_#{role}"
-
+  def sqlite_connection(env)
     {
       "adapter" => SQLITE_ADAPTER,
       "max_connections" => max_threads,
       "timeout" => 5000,
-      "database" => "storage/#{env}#{suffix}.sqlite3"
+      "database" => "storage/#{env}.sqlite3"
     }
   end
 
-  def postgresql_connection(env, role)
+  def postgresql_connection(env)
     {
       "adapter" => POSTGRESQL_ADAPTER,
       "encoding" => "unicode",
       "pool" => max_threads,
-      "database" => postgresql_database(env, role),
+      "database" => postgresql_database(env),
       "host" => ENV["DATABASE_HOST"].presence,
       "port" => ENV["DATABASE_PORT"].presence,
       "username" => ENV["DATABASE_USERNAME"].presence,
@@ -103,8 +84,7 @@ module DatabaseConfig
     }.compact
   end
 
-  def postgresql_database(env, role)
-    base = ENV["DATABASE_NAME"].presence || "llm_tester_#{env}"
-    role == :primary ? base : "#{base}_#{role}"
+  def postgresql_database(env)
+    ENV["DATABASE_NAME"].presence || "llm_tester_#{env}"
   end
 end

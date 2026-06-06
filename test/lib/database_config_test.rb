@@ -34,52 +34,52 @@ class DatabaseConfigTest < ActiveSupport::TestCase
     end
   end
 
-  test "sqlite development uses a single primary database" do
+  test "sqlite uses a single database file per environment" do
     config = DatabaseConfig.environment_config("development")
     assert_equal "sqlite3", config["adapter"]
     assert_equal "storage/development.sqlite3", config["database"]
     assert_not config.key?("migrations_paths")
   end
 
-  test "sqlite production splits into the four roles" do
-    config = DatabaseConfig.environment_config("production")
-    assert_equal %w[primary cache queue cable], config.keys
-    assert_equal "storage/production.sqlite3", config["primary"]["database"]
-    assert_equal "storage/production_cache.sqlite3", config["cache"]["database"]
-    assert_equal "db/cache_migrate", config["cache"]["migrations_paths"]
-    assert_not config["primary"].key?("migrations_paths")
+  test "every environment is a single (non-multi-database) config" do
+    %w[development test production].each do |env|
+      config = DatabaseConfig.environment_config(env)
+      assert config.key?("adapter"), "#{env} should be a flat connection config"
+      assert_not config.key?("primary"), "#{env} should not declare named roles"
+    end
   end
 
   test "postgresql connection reads details from the environment" do
     ENV["DATABASE_ADAPTER"] = "postgresql"
     ENV["DATABASE_HOST"] = "db.internal"
     ENV["DATABASE_PORT"] = "5433"
-    ENV["DATABASE_NAME"] = "tester"
+    ENV["DATABASE_NAME"] = "llm-tester_db"
     ENV["DATABASE_USERNAME"] = "tester_user"
     ENV["DATABASE_PASSWORD"] = "secret"
 
-    primary = DatabaseConfig.connection_config("production", :primary)
+    primary = DatabaseConfig.environment_config("production")
     assert_equal "postgresql", primary["adapter"]
-    assert_equal "tester", primary["database"]
+    assert_equal "llm-tester_db", primary["database"]
     assert_equal "db.internal", primary["host"]
     assert_equal "5433", primary["port"]
     assert_equal "tester_user", primary["username"]
     assert_equal "secret", primary["password"]
-
-    cache = DatabaseConfig.connection_config("production", :cache)
-    assert_equal "tester_cache", cache["database"]
-    assert_equal "db/cache_migrate", cache["migrations_paths"]
   end
 
-  test "postgresql database name defaults per environment" do
+  test "postgresql honors the provided database name verbatim" do
     ENV["DATABASE_ADAPTER"] = "postgresql"
-    assert_equal "llm_tester_production", DatabaseConfig.postgresql_database("production", :primary)
-    assert_equal "llm_tester_production_queue", DatabaseConfig.postgresql_database("production", :queue)
+    ENV["DATABASE_NAME"] = "llm-tester_db"
+    assert_equal "llm-tester_db", DatabaseConfig.postgresql_database("production")
+  end
+
+  test "postgresql database name defaults per environment when unset" do
+    ENV["DATABASE_ADAPTER"] = "postgresql"
+    assert_equal "llm_tester_production", DatabaseConfig.postgresql_database("production")
   end
 
   test "postgresql omits blank connection options" do
     ENV["DATABASE_ADAPTER"] = "postgresql"
-    primary = DatabaseConfig.connection_config("development", :primary)
+    primary = DatabaseConfig.environment_config("development")
     assert_not primary.key?("host")
     assert_not primary.key?("username")
   end
@@ -87,13 +87,13 @@ class DatabaseConfigTest < ActiveSupport::TestCase
   test "pool honors RAILS_MAX_THREADS" do
     ENV["RAILS_MAX_THREADS"] = "11"
     assert_equal 11, DatabaseConfig.max_threads
-    assert_equal 11, DatabaseConfig.connection_config("development", :primary)["max_connections"]
+    assert_equal 11, DatabaseConfig.environment_config("development")["max_connections"]
   end
 
   test "rendered output is valid YAML for all environments" do
     parsed = YAML.safe_load(DatabaseConfig.rendered, aliases: true)
     assert_equal %w[development test production], parsed.keys
     assert_equal "sqlite3", parsed["development"]["adapter"]
-    assert parsed["production"].key?("cable")
+    assert_equal "storage/production.sqlite3", parsed["production"]["database"]
   end
 end
