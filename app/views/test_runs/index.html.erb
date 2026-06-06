@@ -1,5 +1,32 @@
 <h1 class="mb-4">Test Runs</h1>
 
+<%= form_with url: test_runs_path, method: :get, class: "row g-2 mb-4 align-items-end" do %>
+  <div class="col-auto">
+    <%= label_tag :test_definition_id, "Test", class: "form-label mb-1" %>
+    <%= select_tag :test_definition_id,
+          options_from_collection_for_select(@test_definitions, :id, :name, params[:test_definition_id]),
+          include_blank: "All tests", class: "form-select form-select-sm" %>
+  </div>
+  <div class="col-auto">
+    <%= label_tag :llm_model_id, "Model", class: "form-label mb-1" %>
+    <%= select_tag :llm_model_id,
+          options_from_collection_for_select(@llm_models, :id, :label_with_server, params[:llm_model_id]),
+          include_blank: "All models", class: "form-select form-select-sm" %>
+  </div>
+  <div class="col-auto">
+    <%= label_tag :status, "Result", class: "form-label mb-1" %>
+    <%= select_tag :status,
+          options_for_select(TestRun::STATUSES.map { |s| [ s.capitalize, s ] }, params[:status]),
+          include_blank: "All results", class: "form-select form-select-sm" %>
+  </div>
+  <div class="col-auto">
+    <%= submit_tag "Filter", class: "btn btn-sm btn-primary" %>
+    <% if params[:test_definition_id].present? || params[:llm_model_id].present? || params[:status].present? %>
+      <%= link_to "Clear", test_runs_path, class: "btn btn-sm btn-outline-secondary" %>
+    <% end %>
+  </div>
+<% end %>
+
 <% if @test_runs.any? %>
   <div class="table-responsive">
     <table class="table table-hover align-middle">
@@ -29,6 +56,8 @@
   </div>
 
   <nav class="mt-3"><%== pagy_nav(@pagy) %></nav>
+<% elsif params[:test_definition_id].present? || params[:llm_model_id].present? || params[:status].present? %>
+  <p class="text-muted">No test runs match these filters.</p>
 <% else %>
   <p class="text-muted">No test runs yet.</p>
 <% end %>
