@@ -1,12 +1,15 @@
 # frozen_string_literal: true
 
 class LlmModel < ApplicationRecord
+  BENCHMARK_LATENCY_MODES = %w[generation api none].freeze
+
   belongs_to :server
   has_many :test_definitions, dependent: :destroy
   has_many :test_runs, dependent: :destroy
   has_many :benchmark_runs, dependent: :destroy
 
   validates :name, presence: true, uniqueness: { scope: :server_id }
+  validates :benchmark_latency_mode, presence: true, inclusion: { in: BENCHMARK_LATENCY_MODES }
 
   scope :enabled, -> { where(enabled: true) }
 

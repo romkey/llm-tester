@@ -7,6 +7,6 @@ class RunModelBenchmarkJob < ApplicationJob
     model = LlmModel.find(llm_model_id)
     return unless model.enabled?
 
-    Inference::BenchRunner.run(model)
+    Inference::BenchRunner.run(model, latency_mode: model.benchmark_latency_mode)
   end
 end

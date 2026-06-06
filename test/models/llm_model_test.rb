@@ -8,6 +8,24 @@ class LlmModelTest < ActiveSupport::TestCase
     assert_not duplicate.valid?
   end
 
+  test "defaults benchmark latency mode to generation" do
+    model = LlmModel.create!(name: "fresh-model", server: servers(:ollama))
+    assert_equal "generation", model.benchmark_latency_mode
+  end
+
+  test "rejects an unknown benchmark latency mode" do
+    model = LlmModel.new(name: "x", server: servers(:ollama), benchmark_latency_mode: "bogus")
+    assert_not model.valid?
+    assert_includes model.errors[:benchmark_latency_mode], "is not included in the list"
+  end
+
+  test "accepts supported benchmark latency modes" do
+    LlmModel::BENCHMARK_LATENCY_MODES.each do |mode|
+      model = LlmModel.new(name: "model-#{mode}", server: servers(:ollama), benchmark_latency_mode: mode)
+      assert model.valid?, "expected #{mode} to be valid"
+    end
+  end
+
   test "healthy when enabled tests all passed" do
     assert llm_models(:llama).healthy?
   end

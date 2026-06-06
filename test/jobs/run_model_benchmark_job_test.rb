@@ -18,4 +18,14 @@ class RunModelBenchmarkJobTest < ActiveJob::TestCase
       RunModelBenchmarkJob.perform_now(model.id)
     end
   end
+
+  test "uses the model's configured benchmark latency mode" do
+    model = llm_models(:llama)
+    model.update!(benchmark_latency_mode: "none")
+
+    RunModelBenchmarkJob.perform_now(model.id)
+
+    run = model.benchmark_runs.order(:created_at).last
+    assert_includes run.command, "--latency-mode none"
+  end
 end

@@ -20,6 +20,11 @@
   </div>
 
   <div class="mb-3">
+    <%= form_label_with_requirement form, :benchmark_latency_mode, text: "Benchmark latency mode", hint: "How llama-benchy measures latency. Use \"none\" or \"api\" for backends that reject empty-content probe requests (HTTP 400)." %>
+    <%= form.select :benchmark_latency_mode, LlmModel::BENCHMARK_LATENCY_MODES, {}, class: "form-select" %>
+  </div>
+
+  <div class="mb-3">
     <%= form_check_label_with_requirement form, :enabled, text: "Enabled", optional: true, hint: "Disabled models are skipped by tests and excluded from health checks." %>
   </div>
 

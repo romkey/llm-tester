@@ -48,7 +48,7 @@ module Settings
     end
 
     def llm_model_params
-      params.expect(llm_model: %i[name server_id enabled])
+      params.expect(llm_model: %i[name server_id enabled benchmark_latency_mode])
     end
   end
 end
