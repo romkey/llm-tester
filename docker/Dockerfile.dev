@@ -9,11 +9,13 @@ RUN apt-get update -qq && \
       build-essential \
       curl \
       git \
+      libpq-dev \
       libsqlite3-dev \
       libvips \
       libyaml-dev \
       node-gyp \
       pkg-config \
+      postgresql-client \
       python-is-python3 \
       sqlite3 && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives

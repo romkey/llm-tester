@@ -23,6 +23,8 @@ x-app-image: &app-image
     RAILS_ENV: production
     SECRET_KEY_BASE: ${SECRET_KEY_BASE:?Set SECRET_KEY_BASE in .env or .env.production}
     REDIS_URL: redis://llm-tester-prod-redis:6379/0
+    # Database selection is driven by DATABASE_* vars from your .env file.
+    # Defaults to SQLite when DATABASE_ADAPTER is unset.
   volumes:
     - llm-tester-prod-storage:/rails/storage
   depends_on:
@@ -65,6 +67,27 @@ services:
       retries: 5
     restart: unless-stopped
 
+  # Optional PostgreSQL database. Only starts with the "postgres" profile:
+  #   docker compose -f docker-compose.production.yml --profile postgres up -d
+  # Set the matching DATABASE_* vars in your .env to point the app at it.
+  llm-tester-prod-postgres:
+    image: postgres:17-alpine
+    container_name: llm-tester-prod-postgres
+    profiles: ["postgres"]
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME:-llm_tester_production}
+      POSTGRES_USER: ${DATABASE_USERNAME:-llm_tester}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:?Set DATABASE_PASSWORD in .env to use PostgreSQL}
+    volumes:
+      - llm-tester-prod-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USERNAME:-llm_tester}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
 volumes:
   llm-tester-prod-storage:
   llm-tester-prod-redis-data:
+  llm-tester-prod-postgres-data:

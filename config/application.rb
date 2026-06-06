@@ -16,7 +16,7 @@ module LlmTester
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.
-    config.autoload_lib(ignore: %w[assets tasks app_time_zone.rb])
+    config.autoload_lib(ignore: %w[assets tasks app_time_zone.rb database_config.rb])
     config.autoload_paths << Rails.root.join("app/services")
 
     # Configuration for the application, engines, and railties goes here.
