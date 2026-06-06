@@ -3,7 +3,7 @@
   <%= button_to "Run Now", run_now_benchmarks_path, method: :post, class: "btn btn-sm btn-primary" %>
 </div>
 
-<p class="text-muted">Latest llama-benchy results per enabled model. Benchmarks run hourly against all enabled models.</p>
+<p class="text-muted">Latest llama-benchy results per model. Scheduled benchmarks run hourly against all enabled models; models marked "Disabled" are shown from earlier runs.</p>
 
 <% if @latest_runs.any? %>
   <div class="card mb-4">
@@ -21,26 +21,27 @@
             <th>TTFT</th>
             <th>Prompt ms</th>
             <th>When</th>
+            <th class="text-end">Details</th>
           </tr>
         </thead>
         <tbody>
           <% @latest_runs.each do |run| %>
             <tr class="<%= "text-muted" unless run.passed? %>">
-              <td><%= run.llm_model.name %></td>
-              <td><%= run.server.name %></td>
               <td>
-                <% if run.passed? %>
-                  <%= tag.span("Passed", class: "badge text-bg-success") %>
-                <% else %>
-                  <%= tag.span("Error", class: "badge text-bg-warning") %>
+                <%= run.llm_model.name %>
+                <% unless run.llm_model.enabled? %>
+                  <%= tag.span("Disabled", class: "badge text-bg-secondary ms-1") %>
                 <% end %>
               </td>
+              <td><%= run.server.name %></td>
+              <td><%= benchmark_status_badge(run) %></td>
               <td><%= format_tokens_per_second(run.prompt_tokens_per_second) %></td>
               <td><%= format_tokens_per_second(run.generation_tokens_per_second) %></td>
               <td><%= format_tokens_per_second(run.peak_generation_tokens_per_second) %></td>
               <td><%= format_ms(run.time_to_first_token_ms) %></td>
               <td><%= format_ms(run.estimated_prompt_processing_ms) %></td>
               <td><%= l(run.created_at, format: :short) %></td>
+              <td class="text-end"><%= link_to "View", benchmark_path(run), class: "btn btn-sm btn-outline-secondary" %></td>
             </tr>
           <% end %>
         </tbody>
@@ -63,6 +64,7 @@
           <th>PP t/s</th>
           <th>TG t/s</th>
           <th>When</th>
+          <th class="text-end">Details</th>
         </tr>
       </thead>
       <tbody>
@@ -70,16 +72,11 @@
           <tr class="<%= "text-muted" unless run.passed? %>">
             <td><%= run.llm_model.name %></td>
             <td><%= run.server.name %></td>
-            <td>
-              <% if run.passed? %>
-                <%= tag.span("Passed", class: "badge text-bg-success") %>
-              <% else %>
-                <%= tag.span("Error", class: "badge text-bg-warning") %>
-              <% end %>
-            </td>
+            <td><%= benchmark_status_badge(run) %></td>
             <td><%= format_tokens_per_second(run.prompt_tokens_per_second) %></td>
             <td><%= format_tokens_per_second(run.generation_tokens_per_second) %></td>
             <td><%= l(run.created_at, format: :short) %></td>
+            <td class="text-end"><%= link_to "View", benchmark_path(run), class: "btn btn-sm btn-outline-secondary" %></td>
           </tr>
         <% end %>
       </tbody>

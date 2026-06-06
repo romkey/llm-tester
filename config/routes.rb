@@ -14,7 +14,7 @@ Rails.application.routes.draw do
   resources :llm_models, only: %i[show], path: "models"
 
   resources :test_runs, only: %i[index show], path: "tests"
-  resources :benchmarks, only: %i[index] do
+  resources :benchmarks, only: %i[index show] do
     post :run_now, on: :collection
   end
 

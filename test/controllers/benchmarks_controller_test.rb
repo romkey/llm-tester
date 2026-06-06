@@ -34,4 +34,32 @@ class BenchmarksControllerTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert_select ".alert", /No enabled models/
   end
+
+  test "show displays benchmark run details" do
+    get benchmark_url(benchmark_runs(:llama_latest))
+
+    assert_response :success
+    assert_select "h1", "Benchmark Run"
+  end
+
+  test "show surfaces the error message, command, and output" do
+    model = llm_models(:llama)
+    run = BenchmarkRun.create!(
+      llm_model: model,
+      server: model.server,
+      status: "error",
+      error_message: "Could not reach Ollama server: Connection refused",
+      command: "llama-benchy --model llama3 --api-key [REDACTED]",
+      output: "traceback details",
+      started_at: Time.current,
+      finished_at: Time.current
+    )
+
+    get benchmark_url(run)
+
+    assert_response :success
+    assert_select ".alert", /Could not reach Ollama server/
+    assert_select "pre", text: /llama-benchy --model llama3/
+    assert_select "pre", text: /traceback details/
+  end
 end

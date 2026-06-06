@@ -6,6 +6,10 @@ class BenchmarksController < ApplicationController
     @recent_runs = BenchmarkRun.recent_first.includes(llm_model: :server).limit(50)
   end
 
+  def show
+    @benchmark_run = BenchmarkRun.includes(llm_model: :server).find(params[:id])
+  end
+
   def run_now
     count = LlmModel.enabled.count
 

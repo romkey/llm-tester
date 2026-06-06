@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_05_221135) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_06_020000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -40,6 +40,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_05_221135) do
   end
 
   create_table "benchmark_runs", force: :cascade do |t|
+    t.text "command"
     t.integer "context_depth"
     t.datetime "created_at", null: false
     t.text "error_message"
@@ -48,6 +49,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_05_221135) do
     t.integer "generation_tokens"
     t.float "generation_tokens_per_second"
     t.integer "llm_model_id", null: false
+    t.text "output"
     t.float "peak_generation_tokens_per_second"
     t.integer "prompt_tokens"
     t.float "prompt_tokens_per_second"

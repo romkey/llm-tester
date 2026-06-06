@@ -22,10 +22,14 @@ module Inference
 
     def run
       started_at = Time.current
+      command = nil
+      output = nil
 
       Tempfile.create([ "benchmark", ".json" ]) do |file|
         file.close
-        @command.run(model: @model, output_path: file.path, **@options)
+        result = @command.run(model: @model, output_path: file.path, **@options)
+        command = result.command
+        output = combine_output(result.stdout, result.stderr)
         report = JSON.parse(File.read(file.path))
         summary = BenchReportParser.summary(report)
 
@@ -33,17 +37,32 @@ module Inference
           benchmark_attributes(
             started_at: started_at,
             status: "passed",
+            command: command,
+            output: output,
             raw_report: report.to_json,
             **summary
           )
         )
       end
-    rescue BenchCommand::Error, JSON::ParserError, Errno::ENOENT => e
+    rescue BenchCommand::Error => e
       BenchmarkRun.create!(
         benchmark_attributes(
           started_at: started_at,
           status: "error",
           error_message: e.message,
+          command: e.command,
+          output: combine_output(e.stdout, e.stderr),
+          finished_at: Time.current
+        )
+      )
+    rescue JSON::ParserError, Errno::ENOENT => e
+      BenchmarkRun.create!(
+        benchmark_attributes(
+          started_at: started_at,
+          status: "error",
+          error_message: e.message,
+          command: command,
+          output: output,
           finished_at: Time.current
         )
       )
@@ -52,6 +71,10 @@ module Inference
     private
 
     attr_reader :model
+
+    def combine_output(stdout, stderr)
+      [ stdout, stderr ].compact_blank.join("\n\n").presence
+    end
 
     def benchmark_attributes(started_at:, status:, finished_at: Time.current, **attributes)
       {

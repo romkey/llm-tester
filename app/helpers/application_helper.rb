@@ -24,6 +24,14 @@ module ApplicationHelper
     end
   end
 
+  def benchmark_status_badge(benchmark_run)
+    if benchmark_run.passed?
+      tag.span("Passed", class: "badge text-bg-success")
+    else
+      tag.span("Error", class: "badge text-bg-warning")
+    end
+  end
+
   def test_run_reason(test_run)
     return "Test has not been run yet." if test_run.nil?
     return "Passed." if test_run.passed?
