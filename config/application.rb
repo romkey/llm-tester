@@ -22,7 +22,12 @@ module LlmTester
     # These settings can be overridden in specific environments using the files
     # in config/environments, which are processed later.
     #
-    # config.time_zone = "Central Time (US & Canada)"
+    # Use the TZ environment variable for the display time zone when it is a
+    # recognized zone; otherwise fall back to the Rails default (UTC).
+    if ENV["TZ"].present? && (zone = ActiveSupport::TimeZone[ENV["TZ"]])
+      config.time_zone = zone.name
+    end
+
     # config.eager_load_paths << Rails.root.join("extras")
   end
 end
