@@ -49,4 +49,37 @@ class InferenceBenchRunnerTest < ActiveSupport::TestCase
     assert_equal "llama-benchy --model boom", run.command
     assert_includes run.output, "boom details"
   end
+
+  test "records error for unexpected exceptions instead of raising" do
+    model = llm_models(:llama)
+    exploding_command = Class.new do
+      def self.run(**)
+        raise "kaboom"
+      end
+    end
+
+    assert_difference "BenchmarkRun.count", 1 do
+      run = Inference::BenchRunner.run(model, command: exploding_command)
+      assert run.error?
+      assert_includes run.error_message, "RuntimeError"
+      assert_includes run.error_message, "kaboom"
+    end
+  end
+
+  test "records error when the report is not valid JSON" do
+    model = llm_models(:llama)
+    bad_json_command = Class.new do
+      def self.run(model:, output_path:, **)
+        File.write(output_path, "not json")
+        Inference::BenchCommand::Result.new(command: "llama-benchy --model #{model.name}", stdout: "", stderr: "")
+      end
+    end
+
+    assert_difference "BenchmarkRun.count", 1 do
+      run = Inference::BenchRunner.run(model, command: bad_json_command)
+      assert run.error?
+      assert_includes run.error_message, "JSON"
+      assert_equal "llama-benchy --model #{model.name}", run.command
+    end
+  end
 end

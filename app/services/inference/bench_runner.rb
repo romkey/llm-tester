@@ -45,32 +45,30 @@ module Inference
         )
       end
     rescue BenchCommand::Error => e
+      record_error(started_at, e.message, command: e.command, output: combine_output(e.stdout, e.stderr))
+    rescue StandardError => e
+      # Record every other failure (parse errors, missing binary, unexpected
+      # exceptions, etc.) so it is visible in the UI instead of only surfacing
+      # as a silent Sidekiq retry.
+      record_error(started_at, "#{e.class}: #{e.message}", command: command, output: output)
+    end
+
+    private
+
+    attr_reader :model
+
+    def record_error(started_at, message, command:, output:)
       BenchmarkRun.create!(
         benchmark_attributes(
           started_at: started_at,
           status: "error",
-          error_message: e.message,
-          command: e.command,
-          output: combine_output(e.stdout, e.stderr),
-          finished_at: Time.current
-        )
-      )
-    rescue JSON::ParserError, Errno::ENOENT => e
-      BenchmarkRun.create!(
-        benchmark_attributes(
-          started_at: started_at,
-          status: "error",
-          error_message: e.message,
+          error_message: message,
           command: command,
           output: output,
           finished_at: Time.current
         )
       )
     end
-
-    private
-
-    attr_reader :model
 
     def combine_output(stdout, stderr)
       [ stdout, stderr ].compact_blank.join("\n\n").presence
