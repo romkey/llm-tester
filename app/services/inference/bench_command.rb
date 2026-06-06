@@ -6,7 +6,7 @@ module Inference
   class BenchCommand
     class Error < StandardError; end
 
-    def self.run(model, output_path:, pp:, tg:, depth:, runs:, latency_mode:)
+    def self.run(model:, output_path:, pp:, tg:, depth:, runs:, latency_mode:, capture: Open3.method(:capture3))
       new.run(
         model: model,
         output_path: output_path,
@@ -14,11 +14,12 @@ module Inference
         tg: tg,
         depth: depth,
         runs: runs,
-        latency_mode: latency_mode
+        latency_mode: latency_mode,
+        capture: capture
       )
     end
 
-    def run(model:, output_path:, pp:, tg:, depth:, runs:, latency_mode:)
+    def run(model:, output_path:, pp:, tg:, depth:, runs:, latency_mode:, capture: Open3.method(:capture3))
       command = build_command(
         model: model,
         output_path: output_path,
@@ -29,7 +30,7 @@ module Inference
         latency_mode: latency_mode
       )
 
-      _stdout, stderr, status = Open3.capture3(*command)
+      _stdout, stderr, status = capture.call(*command)
       return if status.success? && File.file?(output_path)
 
       message = stderr.presence || "llama-benchy failed with exit status #{status.exitstatus}"
