@@ -32,6 +32,17 @@ module Inference
         command = result.command
         output = combine_output(result.stdout, result.stderr)
         report = JSON.parse(File.read(file.path))
+
+        unless BenchReportParser.usable?(report)
+          next record_error(
+            started_at,
+            benchmark_failure_message(output),
+            command: command,
+            output: output,
+            raw_report: report.to_json
+          )
+        end
+
         summary = BenchReportParser.summary(report)
 
         BenchmarkRun.create!(
@@ -58,7 +69,7 @@ module Inference
 
     attr_reader :model
 
-    def record_error(started_at, message, command:, output:)
+    def record_error(started_at, message, command:, output:, raw_report: nil)
       BenchmarkRun.create!(
         benchmark_attributes(
           started_at: started_at,
@@ -66,9 +77,21 @@ module Inference
           error_message: message,
           command: command,
           output: output,
+          raw_report: raw_report,
           finished_at: Time.current
         )
       )
+    end
+
+    # llama-benchy writes a result file with null metrics when the model server
+    # errors mid-run. Surface the underlying HTTP error from the output when we
+    # can find it so the failure is actionable in the UI.
+    def benchmark_failure_message(output)
+      base = "Benchmark produced no throughput data; the model server likely returned an error."
+      http_line = output.to_s.lines.find { |line| line.match?(/HTTP \d{3}/) }
+      return base unless http_line
+
+      "#{base} #{http_line.strip.truncate(300)}"
     end
 
     def combine_output(stdout, stderr)

@@ -19,6 +19,17 @@ module Inference
         }
       end
 
+      # llama-benchy exits successfully and still writes a result file when the
+      # model server errors mid-run; the benchmark entry just has null
+      # throughput metrics. Treat a run as usable only when it actually produced
+      # prompt- and token-generation throughput numbers.
+      def usable?(report)
+        benchmark = primary_benchmark(report)
+        return false unless benchmark
+
+        mean_metric(benchmark, "pp_throughput") && mean_metric(benchmark, "tg_throughput")
+      end
+
       def primary_benchmark(report)
         report.fetch("benchmarks", []).find do |entry|
           entry["context_size"].to_i.zero? && !entry["is_context_prefill_phase"]

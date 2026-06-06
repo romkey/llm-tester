@@ -66,6 +66,34 @@ class InferenceBenchRunnerTest < ActiveSupport::TestCase
     end
   end
 
+  test "records error when the report has no throughput data" do
+    model = llm_models(:llama)
+    empty_result_command = Class.new do
+      def self.report
+        File.read(Rails.root.join("test/fixtures/files/bench_report_failed.json"))
+      end
+
+      def self.run(model:, output_path:, **)
+        File.write(output_path, report)
+        Inference::BenchCommand::Result.new(
+          command: "llama-benchy --model #{model.name}",
+          stdout: "Run 1/1 (batch size 1)...\nHTTP 500: {\"error\":{\"message\":\"litellm.InternalServerError: Connection error.\"}}",
+          stderr: ""
+        )
+      end
+    end
+
+    assert_difference "BenchmarkRun.count", 1 do
+      run = Inference::BenchRunner.run(model, command: empty_result_command)
+      assert run.error?
+      assert_includes run.error_message, "no throughput data"
+      assert_includes run.error_message, "HTTP 500"
+      assert_includes run.output, "Connection error"
+      assert run.raw_report.present?
+      assert_nil run.prompt_tokens_per_second
+    end
+  end
+
   test "records error when the report is not valid JSON" do
     model = llm_models(:llama)
     bad_json_command = Class.new do
