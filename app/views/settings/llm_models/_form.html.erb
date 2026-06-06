@@ -20,8 +20,12 @@
   </div>
 
   <div class="mb-3">
-    <%= form_label_with_requirement form, :benchmark_latency_mode, text: "Benchmark latency mode", hint: "How llama-benchy measures latency. Use \"none\" or \"api\" for backends that reject empty-content probe requests (HTTP 400)." %>
+    <%= form_label_with_requirement form, :benchmark_latency_mode, text: "Benchmark latency mode", hint: "How llama-benchy measures latency: api, generation, or none." %>
     <%= form.select :benchmark_latency_mode, LlmModel::BENCHMARK_LATENCY_MODES, {}, class: "form-select" %>
+  </div>
+
+  <div class="mb-3">
+    <%= form_check_label_with_requirement form, :benchmark_adapt_prompt, text: "Adapt benchmark prompt size", optional: true, hint: "Calibrates prompt size against the server. Uncheck for gateways that reject the empty-content probe with HTTP 400 (\"Empty user content\")." %>
   </div>
 
   <div class="mb-3">

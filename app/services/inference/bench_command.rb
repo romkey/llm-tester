@@ -17,7 +17,7 @@ module Inference
       end
     end
 
-    def self.run(model:, output_path:, pp:, tg:, depth:, runs:, latency_mode:, capture: Open3.method(:capture3))
+    def self.run(model:, output_path:, pp:, tg:, depth:, runs:, latency_mode:, adapt_prompt:, capture: Open3.method(:capture3))
       new.run(
         model: model,
         output_path: output_path,
@@ -26,11 +26,12 @@ module Inference
         depth: depth,
         runs: runs,
         latency_mode: latency_mode,
+        adapt_prompt: adapt_prompt,
         capture: capture
       )
     end
 
-    def run(model:, output_path:, pp:, tg:, depth:, runs:, latency_mode:, capture: Open3.method(:capture3))
+    def run(model:, output_path:, pp:, tg:, depth:, runs:, latency_mode:, adapt_prompt:, capture: Open3.method(:capture3))
       command = build_command(
         model: model,
         output_path: output_path,
@@ -38,7 +39,8 @@ module Inference
         tg: tg,
         depth: depth,
         runs: runs,
-        latency_mode: latency_mode
+        latency_mode: latency_mode,
+        adapt_prompt: adapt_prompt
       )
       printable = redact(command).join(" ")
 
@@ -58,7 +60,7 @@ module Inference
 
     private
 
-    def build_command(model:, output_path:, pp:, tg:, depth:, runs:, latency_mode:)
+    def build_command(model:, output_path:, pp:, tg:, depth:, runs:, latency_mode:, adapt_prompt:)
       command = [
         "llama-benchy",
         "--base-url", model.server.openai_compatible_base_url,
@@ -73,6 +75,10 @@ module Inference
         "--skip-coherence",
         "--no-warmup"
       ]
+      # Prompt-size adaptation probes the server (including an empty-user-content
+      # request) to calibrate the chat template overhead. Some gateways reject
+      # empty user content, so allow disabling it per model.
+      command << "--no-adapt-prompt" unless adapt_prompt
       command += [ "--api-key", model.server.api_key ] if model.server.api_key.present?
       command
     end

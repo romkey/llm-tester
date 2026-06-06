@@ -6,7 +6,7 @@ require "tmpdir"
 class InferenceBenchCommandTest < ActiveSupport::TestCase
   Status = Struct.new(:success?, :exitstatus)
 
-  def run_command(model:, output_path:, capture:)
+  def run_command(model:, output_path:, capture:, adapt_prompt: true)
     Inference::BenchCommand.run(
       model: model,
       output_path: output_path,
@@ -15,6 +15,7 @@ class InferenceBenchCommandTest < ActiveSupport::TestCase
       depth: 0,
       runs: 1,
       latency_mode: "generation",
+      adapt_prompt: adapt_prompt,
       capture: capture
     )
   end
@@ -40,6 +41,28 @@ class InferenceBenchCommandTest < ActiveSupport::TestCase
       assert_includes result.command, "llama-benchy"
       assert_equal "stdout text", result.stdout
       assert_equal "stderr text", result.stderr
+    end
+  end
+
+  test "adds --no-adapt-prompt only when prompt adaptation is disabled" do
+    model = llm_models(:llama)
+
+    Dir.mktmpdir do |dir|
+      output_path = File.join(dir, "bench.json")
+      commands = {}
+
+      [ true, false ].each do |adapt_prompt|
+        capture = lambda do |*command|
+          commands[adapt_prompt] = command
+          File.write(output_path, "{}")
+          [ "", "", Status.new(true, 0) ]
+        end
+
+        run_command(model: model, output_path: output_path, capture: capture, adapt_prompt: adapt_prompt)
+      end
+
+      refute_includes commands[true], "--no-adapt-prompt"
+      assert_includes commands[false], "--no-adapt-prompt"
     end
   end
 

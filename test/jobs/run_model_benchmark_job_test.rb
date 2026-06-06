@@ -28,4 +28,24 @@ class RunModelBenchmarkJobTest < ActiveJob::TestCase
     run = model.benchmark_runs.order(:created_at).last
     assert_includes run.command, "--latency-mode none"
   end
+
+  test "disables prompt adaptation when the model opts out" do
+    model = llm_models(:llama)
+    model.update!(benchmark_adapt_prompt: false)
+
+    RunModelBenchmarkJob.perform_now(model.id)
+
+    run = model.benchmark_runs.order(:created_at).last
+    assert_includes run.command, "--no-adapt-prompt"
+  end
+
+  test "omits --no-adapt-prompt when prompt adaptation is enabled" do
+    model = llm_models(:llama)
+    model.update!(benchmark_adapt_prompt: true)
+
+    RunModelBenchmarkJob.perform_now(model.id)
+
+    run = model.benchmark_runs.order(:created_at).last
+    assert_not_includes run.command, "--no-adapt-prompt"
+  end
 end

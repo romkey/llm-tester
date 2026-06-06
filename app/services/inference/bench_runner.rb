@@ -7,7 +7,8 @@ module Inference
       tg: 32,
       depth: 0,
       runs: 1,
-      latency_mode: "generation"
+      latency_mode: "generation",
+      adapt_prompt: true
     }.freeze
 
     def self.run(model, command: BenchCommand, **options)

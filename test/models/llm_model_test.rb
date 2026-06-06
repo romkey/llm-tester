@@ -13,6 +13,11 @@ class LlmModelTest < ActiveSupport::TestCase
     assert_equal "generation", model.benchmark_latency_mode
   end
 
+  test "enables benchmark prompt adaptation by default" do
+    model = LlmModel.create!(name: "adapt-model", server: servers(:ollama))
+    assert model.benchmark_adapt_prompt
+  end
+
   test "rejects an unknown benchmark latency mode" do
     model = LlmModel.new(name: "x", server: servers(:ollama), benchmark_latency_mode: "bogus")
     assert_not model.valid?
