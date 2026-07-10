@@ -67,7 +67,7 @@ group :test do
   gem "selenium-webdriver"
 end
 
-gem "pagy", "~> 43.5"
+gem "pagy", "~> 43.6"
 gem "sidekiq-cron", "~> 2.4"
 
 gem "webmock", "~> 3.26", group: :test
